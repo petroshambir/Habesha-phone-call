@@ -53,8 +53,8 @@ function Home({ phone, onLogout }) {
   const fetchMinutes = async () => {
     if (!phone) return;
     try {
-      const response = await axios.get(`http://localhost:5000/api/auth/user-minutes?phone=${encodeURIComponent(phone)}`);
-      setSecondsLeft(parseToSeconds(response.data.minutes));
+      // const response = await axios.get(`http://localhost:5000/api/auth/user-minutes?phone=${encodeURIComponent(phone)}`);
+      // setSecondsLeft(parseToSeconds(response.data.minutes));
     } catch (error) { console.error("Fetch Error"); }
   };
 
