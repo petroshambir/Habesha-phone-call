@@ -1,0 +1,37 @@
+import React from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import Register from './pages/Register';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import VerifyOTP from './pages/VerifyOTP';
+
+function App() {
+  return (
+    <Routes>
+      {/* 1. ምዝገባ (Register) */}
+      <Route path="/" element={<Register />} />
+      
+      {/* 2. ኮድ መረጋገጺ (Verify OTP) */}
+      <Route path="/verify-otp" element={<VerifyOTP />} />
+      
+      {/* 3. ሎግ-ኢን (Login) */}
+      <Route path="/login" element={<Login />} />
+      
+      {/* 4. ቀንዲ ገጽ (Home) - ካብ Login ወይ Verify ዝመጸ Phone ይጥቀም */}
+      <Route path="/home" element={<HomeWithState />} />
+      
+      {/* ዘይፍለጥ Path እንተመጸ ናብ Register ክምለስ */}
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
+  );
+}
+
+// እዚ ንእሽቶ Helper Component እዩ፣ ነቲ Phone ካብ State ንምውሳድ
+function HomeWithState() {
+  const location = useLocation();
+  const phone = location.state?.userPhone || "No Phone";
+  
+  return <Home phone={phone} onLogout={() => window.location.href = '/login'} />;
+}
+
+export default App;
