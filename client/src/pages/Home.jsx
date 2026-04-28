@@ -1,10 +1,13 @@
+
+
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { Phone, PhoneOff, Delete, Volume2, VolumeX, LogOut, Clock, Grid, Trash2, CreditCard, Globe } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Phone, PhoneOff, Delete, Volume2, VolumeX, LogOut, Clock, Grid, CreditCard } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom"; // useLocation ተወሲኻ ኣላ
 
 function Home({ phone, onLogout }) {
   const navigate = useNavigate();
+  const location = useLocation(); // <--- እዚኣ ኣገዳሲት እያ
   const [number, setNumber] = useState("");
   const [isCalling, setIsCalling] = useState(false);
   const [isAnswered, setIsAnswered] = useState(false);
@@ -21,12 +24,12 @@ function Home({ phone, onLogout }) {
   const audioRef = useRef(new Audio("/sounds/ringings.mp3"));
   const beepRef = useRef(new Audio("/sounds/dialing.mp3"));
   const warningVoice = useRef(new Audio("/sounds/dialings.mp3"));
-  const inputRef = useRef(null);
 
   useEffect(() => {
     localStorage.setItem("callHistory", JSON.stringify(callHistory));
   }, [callHistory]);
 
+  // --- Logic Helpers ---
   const formatToDisplay = (totalSeconds) => {
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
@@ -39,41 +42,51 @@ function Home({ phone, onLogout }) {
     return (m * 60) + (s || 0);
   };
 
-  const syncMinutesWithDB = async (currentSeconds) => {
-    if (!phone) return;
+  // ካብ Database ባላንስ ንምምጻእ
+
+  const fetchMinutesFromDB = async () => {
+    // 1. ካብ Props ወይ localStorage ነቲ ቁጽሪ ነምጽእ
+    let userPhone = phone || location.state?.userPhone || localStorage.getItem("userPhone");
+
+    if (!userPhone || userPhone === "No Phone") return;
+
+    // *** ኣገዳሲት መፍትሒ ***
+    // እቲ ቁጽሪ ብ '+' ከም ዝጅምር ነረጋግጽ፡ እንተዘይሃልዩ ንውስኸሉ
+    if (!userPhone.startsWith('+')) {
+      userPhone = `+${userPhone}`;
+    }
+
     try {
-      const timeString = formatToDisplay(currentSeconds);
+      const response = await axios.get(`http://localhost:5000/api/auth/user-minutes?phone=${encodeURIComponent(userPhone)}`);
+      if (response.data.success) {
+        setSecondsLeft(parseToSeconds(response.data.minutes));
+        // ነቲ ዝተስተኻኸለ ቁጽሪ (ምስ + ዘሎ) ንዕቅቦ
+        localStorage.setItem("userPhone", userPhone);
+      }
+    } catch (error) { 
+      console.error("Fetch Error", error); 
+    }
+  };
+  
+  const syncMinutesWithDB = async (currentSeconds) => {
+    const userPhone = phone || location.state?.userPhone || localStorage.getItem("userPhone");
+    if (!userPhone) return;
+    try {
       await axios.put('http://localhost:5000/api/auth/update-minutes', {
-        phone: phone,
-        remainingMinutes: timeString
+        phone: userPhone,
+        remainingMinutes: formatToDisplay(currentSeconds)
       });
     } catch (err) { console.error("❌ DB Update Error"); }
   };
 
-  const fetchMinutes = async () => {
-    if (!phone) return;
-    try {
-      // const response = await axios.get(`http://localhost:5000/api/auth/user-minutes?phone=${encodeURIComponent(phone)}`);
-      // setSecondsLeft(parseToSeconds(response.data.minutes));
-    } catch (error) { console.error("Fetch Error"); }
-  };
-
-  useEffect(() => { if (phone) fetchMinutes(); }, [phone]);
-
+  // --- Real-time Refresh Logic ---
   useEffect(() => {
-    if (!phone) return;
-    const eventSource = new EventSource(`http://localhost:5000/api/auth/updates?phone=${phone}`);
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "call_answered") {
-        setIsAnswered(true);
-        setCallStatus('connected');
-        audioRef.current.pause();
-      }
-    };
-    eventSource.onerror = () => eventSource.close();
-    return () => eventSource.close();
-  }, [phone]);
+    fetchMinutesFromDB(); 
+
+    // ገጽ Focus ምስ ገበረ ባዕሉ ዳታ የሐድስ
+    window.addEventListener("focus", fetchMinutesFromDB);
+    return () => window.removeEventListener("focus", fetchMinutesFromDB);
+  }, [phone, location.state?.refresh]); // <--- እታ refresh ምስ ተላእከት ባዕሉ Update ይገብር
 
   useEffect(() => {
     let timerInterval;
@@ -82,7 +95,11 @@ function Home({ phone, onLogout }) {
         setSecondsLeft(prev => {
           const nextValue = prev - 1;
           if (nextValue <= 0) { handleHangUp(); return 0; }
-          if (nextValue % 10 === 0) syncMinutesWithDB(nextValue);
+          
+          if (nextValue % 10 === 0) {
+            syncMinutesWithDB(nextValue);
+          }
+          
           if (nextValue === 60) warningVoice.current.play();
           return nextValue;
         });
@@ -92,7 +109,7 @@ function Home({ phone, onLogout }) {
   }, [isCalling, isAnswered]);
 
   const handleHangUp = async () => {
-    await syncMinutesWithDB(secondsLeft);
+    await syncMinutesWithDB(secondsLeft); 
     if (number) {
       setCallHistory(prev => [{
         to: number,
@@ -112,67 +129,32 @@ function Home({ phone, onLogout }) {
   const startCall = (customNumber = null) => {
     const targetNumber = customNumber || number;
     if (!targetNumber || targetNumber.trim().length < 10) return alert("Enter a valid number!");
-    if (secondsLeft <= 0) return alert("No minutes left!");
-    if (customNumber) setNumber(customNumber);
+    if (secondsLeft <= 0) return alert("No minutes left! Please buy a card.");
     setIsCalling(true);
     setCallStatus('ringing');
     setIsAnswered(false);
     audioRef.current.loop = true;
-    audioRef.current.volume = isSpeakerOn ? 1.0 : 0.2;
     audioRef.current.play().catch(() => { });
+    setTimeout(() => { 
+        setIsAnswered(true); 
+        setCallStatus('connected'); 
+        audioRef.current.pause();
+    }, 3000);
   };
 
-  const handleHistoryCall = (clickedNumber) => {
-    setActiveTab("keypad");
-    setNumber(clickedNumber);
-    setTimeout(() => { startCall(clickedNumber); }, 500);
+  const handleKeyClick = (val) => {
+    if (beepRef.current) { beepRef.current.currentTime = 0; beepRef.current.play().catch(() => { }); }
+    setNumber(prev => prev + val);
+  };
+
+  const handleDelete = () => {
+    setNumber(prev => prev.slice(0, -1));
   };
 
   const toggleSpeaker = () => {
     const newState = !isSpeakerOn;
     setIsSpeakerOn(newState);
-    beepRef.current.currentTime = 0;
-    beepRef.current.play().catch(() => { });
-    if (audioRef.current) { audioRef.current.volume = newState ? 1.0 : 0.2; }
-  };
-
-  const handleKeyClick = (val) => {
-    if (beepRef.current) {
-      beepRef.current.currentTime = 0;
-      beepRef.current.play().catch(() => { });
-    }
-    const input = inputRef.current;
-    const start = input.selectionStart;
-    const end = input.selectionEnd;
-    const newText = number.substring(0, start) + val + number.substring(end);
-    setNumber(newText);
-    setTimeout(() => {
-      if (input) {
-        input.selectionStart = input.selectionEnd = start + 1;
-        input.focus();
-      }
-    }, 0);
-  };
-
-  const handleDelete = () => {
-    const input = inputRef.current;
-    const start = input.selectionStart;
-    const end = input.selectionEnd;
-    if (start === end && start > 0) {
-      const newText = number.substring(0, start - 1) + number.substring(end);
-      setNumber(newText);
-      setTimeout(() => {
-        input.selectionStart = input.selectionEnd = start - 1;
-        input.focus();
-      }, 0);
-    } else {
-      const newText = number.substring(0, start) + number.substring(end);
-      setNumber(newText);
-      setTimeout(() => {
-        input.selectionStart = input.selectionEnd = start;
-        input.focus();
-      }, 0);
-    }
+    if (audioRef.current) audioRef.current.volume = newState ? 1.0 : 0.2;
   };
 
   const dialPadKeys = [
@@ -191,54 +173,37 @@ function Home({ phone, onLogout }) {
           <button onClick={onLogout} className="bg-red-600/90 active:scale-95 p-2 px-3 rounded-xl text-[10px] font-black shadow-lg flex items-center gap-1 uppercase tracking-tighter">
             <LogOut size={14} /> LOGOUT
           </button>
-
-          <button 
-            onClick={() => navigate("/rates")} 
-            className="bg-blue-600/90 active:scale-95 p-2 px-3 rounded-xl text-[10px] font-black shadow-lg flex items-center gap-1 uppercase tracking-tighter"
-          >
-            <Globe size={14} /> Check Card Rates
+          <button onClick={() => navigate("/buy-card")} className="bg-green-600/90 active:scale-95 p-2 px-3 rounded-xl text-[10px] font-black shadow-lg flex items-center gap-1 uppercase tracking-tighter">
+            <CreditCard size={14} /> Buy Card
           </button>
         </div>
-
-        <div className="text-right">
-          <h1 className="text-lg font-black text-yellow-500 italic tracking-tighter leading-none">Habesha Tele</h1>
-          <p className="text-[10px] opacity-50 font-mono">{phone}</p>
+        <div className="text-right text-yellow-500 font-black italic">
+          Habesha Tele
+          <p className="text-[10px] text-white opacity-50 font-mono">{phone || localStorage.getItem("userPhone")}</p>
         </div>
       </div>
 
-      <div className="text-center mb-1 shrink-0">
+      <div className="text-center mb-1 shrink-0 cursor-pointer active:scale-95" onClick={fetchMinutesFromDB}>
         <p className="text-[9px] uppercase tracking-widest opacity-60 mb-1 font-bold">Remaining Balance</p>
         <p className={`text-5xl font-black ${secondsLeft < 60 ? "text-red-500 animate-pulse" : "text-yellow-400"}`}>
           {formatToDisplay(secondsLeft)}
         </p>
       </div>
 
-      <div className="flex-1 w-full max-w-sm flex flex-col justify-between px-6 pb-2 min-h-0 overflow-hidden">
+      <div className="flex-1 w-full max-sm flex flex-col justify-between px-6 pb-2 min-h-0 overflow-hidden">
         {activeTab === "keypad" ? (
           <div className="flex flex-col h-full justify-evenly">
-            <div className="shrink-0">
-              <input
-                ref={inputRef}
-                type="text"
-                value={number}
-                onChange={(e) => setNumber(e.target.value)}
-                inputMode="none"
-                className="w-full bg-transparent text-white text-4xl text-center font-light outline-none h-12 caret-yellow-400"
-                autoFocus
-              />
-              <div className="h-4 text-center mt-1">
-                {callStatus === 'ringing' && <p className="text-green-400 text-[9px] animate-pulse font-bold tracking-[0.2em] uppercase">Calling...</p>}
-                {callStatus === 'connected' && <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-widest">Connected</p>}
+            <div className="shrink-0 text-center">
+              <div className="text-white text-4xl font-light h-12 italic tracking-widest">{number || " "}</div>
+              <div className="h-4 mt-1">
+                {callStatus === 'ringing' && <p className="text-green-400 text-[9px] animate-pulse font-bold uppercase">Calling...</p>}
+                {isAnswered && <p className="text-yellow-400 text-[9px] font-bold uppercase animate-bounce">In Call</p>}
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-y-2 gap-x-4 max-w-[260px] mx-auto">
               {dialPadKeys.map(({ key, letters }) => (
-                <button
-                  key={key}
-                  onClick={() => handleKeyClick(key)}
-                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/5 border border-white/10 flex flex-col items-center justify-center active:bg-white/20 active:scale-90 transition-all mx-auto"
-                >
+                <button key={key} onClick={() => handleKeyClick(key)} className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/5 border border-white/10 flex flex-col items-center justify-center active:bg-white/20 active:scale-90 transition-all mx-auto">
                   <span className="text-xl sm:text-2xl font-bold">{key}</span>
                   <span className="text-[7px] opacity-40 uppercase">{letters}</span>
                 </button>
@@ -246,42 +211,29 @@ function Home({ phone, onLogout }) {
             </div>
 
             <div className="flex justify-between items-center px-4 shrink-0">
-              <button onClick={toggleSpeaker} className={`p-4 rounded-full ${isSpeakerOn ? 'bg-yellow-400 text-black shadow-lg shadow-yellow-400/20' : 'bg-white/5 border border-white/10'}`}>
+              <button onClick={toggleSpeaker} className={`p-4 rounded-full ${isSpeakerOn ? 'bg-yellow-400 text-black shadow-lg' : 'bg-white/5 border border-white/10'}`}>
                 {isSpeakerOn ? <Volume2 size={22} /> : <VolumeX size={22} />}
               </button>
-              {!isCalling ? (
-                <button className="p-6 bg-green-500 rounded-full shadow-xl shadow-green-500/20 active:scale-90 transition-all" onClick={() => startCall()}>
-                  <Phone size={28} fill="white" />
-                </button>
-              ) : (
-                <button className="p-6 bg-red-500 rounded-full shadow-xl shadow-red-500/20 animate-pulse" onClick={handleHangUp}>
-                  <PhoneOff size={28} fill="white" />
-                </button>
-              )}
-              <button className="p-4 rounded-full bg-white/5 border border-white/10 active:bg-red-500/20 active:text-red-400 transition-colors" onClick={handleDelete}>
+              <button className={`p-6 rounded-full shadow-xl ${isCalling ? 'bg-red-500 animate-pulse' : 'bg-green-500 active:scale-90'}`} onClick={isCalling ? handleHangUp : startCall}>
+                {isCalling ? <PhoneOff size={28} fill="white" /> : <Phone size={28} fill="white" />}
+              </button>
+              <button className="p-4 rounded-full bg-white/5 border border-white/10 active:bg-red-500/10 active:text-red-400 transition-colors" onClick={handleDelete}>
                 <Delete size={22} />
               </button>
             </div>
           </div>
         ) : (
-          <div className="flex flex-col h-full pt-2 pb-4 animate-in slide-in-from-right duration-300">
-            <div className="flex justify-between items-center mb-4 shrink-0 border-b border-white/5 pb-2">
-              <h2 className="text-base font-black text-yellow-500 uppercase tracking-widest">Call History</h2>
-              <button onClick={() => setCallHistory([])} className="text-red-400 text-[10px] font-bold flex items-center gap-1 p-2 uppercase">
-                <Trash2 size={14} /> Clear
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
+          <div className="flex flex-col h-full pt-2 pb-4">
+            <h2 className="text-base font-black text-yellow-500 uppercase tracking-widest border-b border-white/5 pb-2 mb-4">Call History</h2>
+            <div className="flex-1 overflow-y-auto space-y-2">
               {callHistory.length === 0 ? <p className="text-center opacity-30 mt-20 text-xs italic">No call logs yet</p> :
                 callHistory.map((log, i) => (
                   <div key={i} className="bg-white/5 p-3 rounded-xl flex justify-between items-center border border-white/5">
-                    <div className="overflow-hidden">
-                      <p className="font-bold text-sm text-yellow-50 truncate">{log.to}</p>
-                      <p className="text-[9px] opacity-40 uppercase tracking-tighter">{log.date} • {log.time} • {log.status}</p>
+                    <div>
+                      <p className="font-bold text-sm text-yellow-50">{log.to}</p>
+                      <p className="text-[9px] opacity-40 uppercase">{log.date} • {log.time}</p>
                     </div>
-                    <button onClick={() => handleHistoryCall(log.to)} className="p-3 bg-green-500/10 rounded-full text-green-400 active:bg-green-500 active:text-white transition-colors">
-                      <Phone size={14} fill="currentColor" />
-                    </button>
+                    <Phone size={14} className="text-green-400" />
                   </div>
                 ))}
             </div>

@@ -3,7 +3,8 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Register from './pages/Register';
 import Home from './pages/Home';
 import Login from './pages/Login';
-import VerifyOTP from './pages/VerifyOTP';
+import VerifyOTP from './components/VerifyOTP';
+import BuyCard from "./components/BuyCard";
 
 function App() {
   return (
@@ -19,7 +20,7 @@ function App() {
       
       {/* 4. ቀንዲ ገጽ (Home) - ካብ Login ወይ Verify ዝመጸ Phone ይጥቀም */}
       <Route path="/home" element={<HomeWithState />} />
-      
+      <Route path="/buy-card" element={<BuyCard />} />
       {/* ዘይፍለጥ Path እንተመጸ ናብ Register ክምለስ */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
