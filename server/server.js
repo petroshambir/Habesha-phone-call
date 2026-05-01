@@ -11,7 +11,7 @@ app.use(express.json());
 
 // MongoDB Connection
 connectDB(); 
-
+app.use('/api/admin', require('./routes/admin'));
 // Routes - 3. ነቶም Routes ኣብዚ ኣእትዎም
 // እቲ ናይ Register ን Login ን ኮድ ኣብ routes/auth.js እንተሃሊዩ:
 app.use('/api/auth', require('./routes/auth.js'));
