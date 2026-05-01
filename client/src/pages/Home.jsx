@@ -20,6 +20,13 @@ function Home({ phone, onLogout }) {
     return saved ? JSON.parse(saved) : [];
   });
 
+  // Home.jsx ውሽጢ እዛ function ተካኣ
+const parseToSeconds = (timeStr) => {
+  if (!timeStr || typeof timeStr !== 'string' || !timeStr.includes(':')) return 0;
+  const [m, s] = timeStr.split(':').map(val => parseInt(val) || 0);
+  return (m * 60) + s;
+};
+
   const audioRef = useRef(new Audio("/sounds/ringings.mp3"));
   const beepRef = useRef(new Audio("/sounds/dialing.mp3"));
   const warningVoice = useRef(new Audio("/sounds/dialings.mp3"));
@@ -35,11 +42,6 @@ function Home({ phone, onLogout }) {
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
-  const parseToSeconds = (timeStr) => {
-    if (typeof timeStr !== 'string') return Number(timeStr) * 60 || 0;
-    const [m, s] = timeStr.split(':').map(Number);
-    return (m * 60) + (s || 0);
-  };
 
   // ካብ Database ባላንስ ንምምጻእ
 

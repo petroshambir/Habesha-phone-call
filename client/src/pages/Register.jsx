@@ -1,6 +1,5 @@
 
 
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Phone, ArrowRight } from 'lucide-react';
@@ -12,12 +11,25 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const [userCountry, setUserCountry] = useState({ code: 'US', currency: 'USD' });
 
+  // 1. ተጠቓሚ ካበይ ምዃኑ ባዕሉ የለሊ (CORS ጸገም ዘይብሉ API)
   useEffect(() => {
-    axios.get('https://ipapi.co/json/')
+    axios.get('https://demo.ip-api.com/json/') 
       .then(res => {
-        setUserCountry({ code: res.data.country_code, currency: res.data.currency });
+        const countryCode = res.data.countryCode; 
+        let detectedCurrency = 'USD';
+
+        // ንኣፍሪቃውያን ሃገራት ብቐሊሉ የለሊ
+        if (countryCode === 'UG') detectedCurrency = 'UGX';
+        else if (countryCode === 'ET') detectedCurrency = 'ETB';
+        else if (countryCode === 'KE') detectedCurrency = 'KES';
+
+        setUserCountry({ code: countryCode, currency: detectedCurrency });
+        console.log("Region Detected Successfully:", detectedCurrency);
       })
-      .catch(() => setUserCountry({ code: 'US', currency: 'USD' }));
+      .catch(() => {
+        console.log("Detection failed, defaulting to USD");
+        setUserCountry({ code: 'US', currency: 'USD' });
+      });
   }, []);
 
   const handleRegister = async (e) => {
@@ -44,7 +56,7 @@ function Register() {
         });
       }
     } catch (err) { 
-      alert(err.response?.data?.msg || "Error!"); 
+      alert(err.response?.data?.msg || "Error occurred during registration!"); 
     } finally { 
       setLoading(false); 
     }
@@ -75,7 +87,7 @@ function Register() {
             
             <div className="relative flex items-center">
               <Phone className="absolute left-4 text-white/30" size={20} />
-              <span className="absolute left-12 text-lg font-bold text-white/30">+</span>
+              <span className="absolute left-12 text-lg font-bold text-white/50">+</span>
               <input
                 type="tel"
                 placeholder="256..."
@@ -88,11 +100,11 @@ function Register() {
           </div>
 
           <button 
-            type="submit"
+            type="submit" 
             disabled={loading}
             className={`w-full bg-yellow-500 hover:bg-yellow-600 text-black font-black p-4 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            {loading ? <span className="animate-pulse text-xs uppercase font-bold">Sending Code...</span> : <>REGISTER NOW <ArrowRight size={20} /></>}
+            {loading ? <span className="animate-pulse text-xs uppercase font-bold">Processing...</span> : <>REGISTER NOW <ArrowRight size={20} /></>}
           </button>
         </form>
 

@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import VerifyOTP from './components/VerifyOTP';
 import BuyCard from "./components/BuyCard";
+import AdminDashboard from './components/AdminDashboard';
 
 function App() {
   return (
@@ -23,7 +24,9 @@ function App() {
       <Route path="/buy-card" element={<BuyCard />} />
       {/* ዘይፍለጥ Path እንተመጸ ናብ Register ክምለስ */}
       <Route path="*" element={<Navigate to="/" />} />
+      <Route path="/admin-dashboard" element={<AdminDashboard />} />
     </Routes>
+    
   );
 }
 
