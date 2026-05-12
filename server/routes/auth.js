@@ -2,12 +2,12 @@
 
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User'); 
+const User = require('../Models/User.js'); 
 const nodemailer = require('nodemailer');
 const axios = require('axios');
 const { parsePhoneNumberFromString } = require('libphonenumber-js');
-const PaymentMethod = require('../models/PaymentMethod.js');
-const Settings = require('../models/Settings');
+const PaymentMethod = require('../Models/PaymentMethod.js');
+const Settings = require('../Models/Settings.js');
 
 // 1. Admin ዋጋ ዝቕይረሉ API
 
