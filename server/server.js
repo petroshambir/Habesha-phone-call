@@ -7,7 +7,11 @@ const connectDB = require('./config/Db.js');
 const app = express();
 
 // Middleware
-app.use(cors()); // 2. እዚኣ ወስኽ
+ 
+app.use(cors({
+  origin: "https://habesha-phone-frontend.onrender.com",
+  credentials: true
+}));// 2. እዚኣ ወስኽ
 app.use(express.json());
 
 // MongoDB Connection
