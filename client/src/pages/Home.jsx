@@ -1778,7 +1778,7 @@ function Home({ phone, onLogout }) {
     if (!userPhone.startsWith('+')) { userPhone = `+${userPhone}`; }
 
     try {
-      const response = await axios.get(`http://localhost:5000/api/auth/user-minutes?phone=${encodeURIComponent(userPhone)}`);
+      const response = await axios.get(`https://habesha-phone-call-4.onrender.com/api/auth/user-minutes?phone=${encodeURIComponent(userPhone)}`);
       if (response.data.success) {
         setSecondsLeft(parseToSeconds(response.data.minutes));
         localStorage.setItem("userPhone", userPhone);
@@ -1790,7 +1790,7 @@ function Home({ phone, onLogout }) {
     const userPhone = phone || localStorage.getItem("userPhone");
     if (!userPhone) return;
     try {
-      await axios.put('http://localhost:5000/api/auth/update-minutes', {
+      await axios.put('https://habesha-phone-call-4.onrender.com/api/auth/update-minutes', {
         phone: userPhone,
         remainingMinutes: formatToDisplay(currentSeconds)
       });
