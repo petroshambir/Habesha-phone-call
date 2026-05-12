@@ -81,16 +81,29 @@ router.get('/payment-methods/:country', async (req, res) => {
 });
 
 
+// const transporter = nodemailer.createTransport({
+//     service: 'gmail',
+//     host: 'smtp.gmail.com',
+//     port: 587,
+//     secure: false, 
+//     auth: {
+//         user: process.env.EMAIL_USER,
+//         pass: process.env.EMAIL_PASS
+//     },
+//     tls: { rejectUnauthorized: false }
+// });
+// --- ሓድሽ ናይ Brevo SMTP ኣወዳድባ (Gmail ተኪእናዮ ኣለና) ---
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    host: 'smtp.gmail.com',
+    host: 'smtp-relay.brevo.com',
     port: 587,
-    secure: false, 
+    secure: false, // 587 ስለ ዝኾነ false ይኸውን
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+        user: process.env.EMAIL_USER, // እቲ petroshambirr@gmail.com
+        pass: process.env.EMAIL_PASS  // እታ ኣብ Render Dashboard ዘእተኻያ ናይ Brevo API Key
     },
-    tls: { rejectUnauthorized: false }
+    tls: { 
+        rejectUnauthorized: false 
+    }
 });
 
 // --- 1. Login ---
