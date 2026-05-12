@@ -8,10 +8,18 @@ const app = express();
 
 // Middleware
  
+// app.use(cors({
+//   origin: "https://habesha-phone-frontend.onrender.com",
+//   credentials: true
+// }));// 2. እዚኣ ወስኽ
+
+// --- ሓድሽ ናይ CORS ኣወዳድባ (ማዕጾ ምሉእ ብምሉእ ዝኸፈተ) ---
 app.use(cors({
-  origin: "https://habesha-phone-frontend.onrender.com",
-  credentials: true
-}));// 2. እዚኣ ወስኽ
+    origin: '*', // 👈 ንኹሉ ፍሮንትኢንድ ይፈቅድ፣ እቲ CORS Error ሕጂ ክጠፍእ እዩ!
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: false // origin '*' ክኸውን ከሎ credentials false ክኸውን ኣለዎ
+}));
+
 app.use(express.json());
 
 // MongoDB Connection
