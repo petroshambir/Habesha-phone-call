@@ -768,7 +768,7 @@ const AdminDashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/stats");
+      const res = await axios.get("https://habesha-phone-call-4.onrender.com/api/admin/stats");
       if (res.data.success) {
         const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
         const formattedData = res.data.stats.map(item => {
@@ -800,7 +800,7 @@ const AdminDashboard = () => {
 
 const fetchCurrentRate = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/auth/get-current-rate/ETB"); 
+      const res = await axios.get("https://habesha-phone-call-4.onrender.com/api/auth/get-current-rate/ETB"); 
       if (res.data.success && res.data.settings) {
         setRateSettings({
           manualRate: res.data.settings.manualRate,
@@ -815,7 +815,7 @@ const fetchCurrentRate = async () => {
 
   const updateExchangeRate = async () => {
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/admin/update-rate", {
+      const response = await axios.post("https://habesha-phone-call-4.onrender.com/api/auth/admin/update-rate", {
         currency: "ETB",
         useManualRate: rateSettings.useManual, 
         manualRate: rateSettings.manualRate
@@ -832,7 +832,7 @@ const fetchCurrentRate = async () => {
     if (manualData.phone === "+" || !manualData.minutes) return alert("በጃኻ ኩሉ መልእ!");
     setLoading(true);
     try {
-      const res = await axios.put("http://localhost:5000/api/admin/manual-update", {
+      const res = await axios.put("https://habesha-phone-call-4.onrender.com/api/admin/manual-update", {
         phone: manualData.phone,
         minutesToAdd: manualData.minutes
       });
