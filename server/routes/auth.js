@@ -23,7 +23,8 @@ router.post('/admin/update-rate', async (req, res) => {
                     manualRate: Number(manualRate) 
                 } 
             },
-            { upsert: true, new: true }
+            // { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
         res.json({ success: true, settings });
     } catch (err) { 
@@ -93,14 +94,43 @@ const transporter = nodemailer.createTransport({
 });
 
 // --- 1. Login ---
+// --- 1. Login (ምስ Device Binding ዝተወሃሃደ) ---
 router.post('/login', async (req, res) => {
-    const { phone } = req.body;
+    const { phone, deviceId } = req.body; // ካብ Frontend deviceId ይቕበል
     try {
         const user = await User.findOne({ phoneNumber: phone });
-        if (!user) return res.status(404).json({ success: false, msg: "እዚ ቁጽሪ እዚ ኣይተመዝገበን!" });
+        
+        if (!user) {
+            return res.status(404).json({ success: false, msg: "እዚ ቁጽሪ እዚ ኣይተመዝገበን!" });
+        }
+
+        // --- DEVICE BINDING LOGIC ---
+        
+        // ሀ. እቲ ተጠቃሚ ገና deviceId እንተዘይብሉ (ንፈለማ እዋን Login ይገብር ኣሎ ማለት እዩ)
+        if (!user.deviceId) {
+            user.deviceId = deviceId; // ነቲ ID ንመዝግቦ
+            await user.save();
+            return res.status(200).json({ success: true, user });
+        }
+
+        // ለ. እቲ ካብ Frontend ዝመጸ ID ምስቲ ኣብ Database ዘሎ እንተዘይተመሳሲሉ (ካብ ካልእ ስልኪ ይፍትን ኣሎ)
+        if (user.deviceId !== deviceId) {
+            return res.status(403).json({ 
+                success: false, 
+                msg: "እዚ ኣካውንት ኣብ ካልእ ስልኪ ተመዝጊቡ ስለዘሎ፡ ካብዚ ስልኪ ክትጥቀሙ ኣይትኽእሉን።" 
+            });
+        }
+
+        // ሐ. ኩሉ ትኽክል እንተኾይኑ (እታ ዝለመዳ ስልኪ እንተኾይና) የሕልፎ
         res.status(200).json({ success: true, user });
-    } catch (err) { res.status(500).json({ success: false }); }
+
+    } catch (err) { 
+        console.error("Login Error:", err);
+        res.status(500).json({ success: false, msg: "Server Error" }); 
+    }
 });
+
+
 
 // --- 2. Register ---
 router.post('/register', async (req, res) => {
@@ -245,8 +275,8 @@ router.put('/update-minutes', async (req, res) => {
         // እቲ ተጠቓሚ ብቁጽሪ ስልኩ ንረኽቦ እሞ ደቂቁ ንቕይሮ
         const user = await User.findOneAndUpdate(
             { phoneNumber: phone },
-            { $set: { minutes: remainingMinutes } },
-            { new: true } // ሓድሽ ዝተመሓየሸ ዳታ ንኪመልሰልና
+            { returnDocument: 'after' }
+            // { new: true } // ሓድሽ ዝተመሓየሸ ዳታ ንኪመልሰልና
         );
 
         if (!user) {
@@ -258,6 +288,24 @@ router.put('/update-minutes', async (req, res) => {
         console.error("Update Minutes Error:", err);
         res.status(500).json({ success: false, msg: "Server Error" });
     }
+});
+
+router.post('/check-device', async (req, res) => {
+  const { phone, deviceId } = req.body;
+  const user = await User.findOne({ phoneNumber: phone });
+
+  if (user.deviceId && user.deviceId !== deviceId) {
+    // እቲ ID ካብቲ ኣብ Database ዘሎ ዝተፈልየ እንተኾይኑ
+    return res.json({ action: 'BLOCK', msg: 'Device mismatch' });
+  }
+
+  // መጀመሪያ እንተኾይኑ ድማ ነቲ ID ንመዝግቦ
+  if (!user.deviceId) {
+    user.deviceId = deviceId;
+    await user.save();
+  }
+  
+  res.json({ action: 'ALLOW' });
 });
 
 module.exports = router;

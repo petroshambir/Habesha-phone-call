@@ -1,4 +1,5 @@
 require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors'); // 1. እዚኣ ወስኽ
 const connectDB = require('./config/Db.js');
