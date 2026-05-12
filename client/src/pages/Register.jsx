@@ -38,7 +38,7 @@ function Register() {
     const fullPhoneNumber = `+${formData.phone}`; 
 
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/register", {
+      const response = await axios.post("https://habesha-phone-call-4.onrender.com/api/auth/register", {
         email: formData.email,
         phone: fullPhoneNumber,
         currency: userCountry.currency 
