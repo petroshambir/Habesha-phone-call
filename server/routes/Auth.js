@@ -479,6 +479,36 @@ router.post('/login', async (req, res) => {
 
 // --- 2. Register ---
 // --- 2. Register (ብናይ Brevo Sender Email ዝተስተኻኸለ) ---
+
+// router.post('/register', async (req, res) => {
+//     const { email, phone, currency } = req.body; 
+//     try {
+//         let userExists = await User.findOne({ $or: [{ email }, { phoneNumber: phone }] });
+//         const isExistingUser = !!userExists; 
+//         const otpCode = Math.floor(1000 + Math.random() * 9000).toString(); 
+        
+//         console.log(`🔥 OTP for ${email}:`, otpCode);
+//         try {
+//             await transporter.sendMail({
+//                 from: 'petroshambirr@gmail.com', // ⚠️ ሕጂ ቀጥታ እቲ ዝተፈቕደ ናይ Brevo Sender Email ጽሒፍናዮ ኣለና
+//                 to: email,
+//                 subject: 'Habesha Tele Code',
+//                 text: `ናትካ ናይ መረጋገጺ ኮድ ${otpCode} እዩ።`
+//             });
+//             console.log("📨 Email sent successfully through Brevo!");
+//         } catch (mailErr) { 
+//             console.log("Email error...", mailErr); // እቲ ጌጋ እንተደኣ ሃልዩ ንምርኣይ
+//         }
+
+//         res.status(200).json({ 
+//             success: true, 
+//             otp: otpCode, 
+//             isExistingUser, 
+//             userData: { email, phone, currency: currency || 'USD' } 
+//         });
+//     } catch (err) { res.status(500).json({ success: false }); }
+// });
+// --- 2. Register (ብናይ Brevo Direct HTTP API ዝተስተኻኸለ - ንRender Timeout ዝሰብር) ---
 router.post('/register', async (req, res) => {
     const { email, phone, currency } = req.body; 
     try {
@@ -487,16 +517,24 @@ router.post('/register', async (req, res) => {
         const otpCode = Math.floor(1000 + Math.random() * 9000).toString(); 
         
         console.log(`🔥 OTP for ${email}:`, otpCode);
+        
+        // --- ናይ Brevo HTTP API ጻውዒት (Render ፈጺሙ ክዓግቶ ኣይክእልን እዩ) ---
         try {
-            await transporter.sendMail({
-                from: 'petroshambirr@gmail.com', // ⚠️ ሕጂ ቀጥታ እቲ ዝተፈቕደ ናይ Brevo Sender Email ጽሒፍናዮ ኣለና
-                to: email,
-                subject: 'Habesha Tele Code',
-                text: `ናትካ ናይ መረጋገጺ ኮድ ${otpCode} እዩ።`
+            await axios.post('https://api.brevo.com/v3/smtp/email', {
+                sender: { name: "Habesha Tele", email: "petroshambirr@gmail.com" },
+                to: [{ email: email }],
+                subject: "Habesha Tele Code",
+                textContent: `ናትካ ናይ መረጋገጺ ኮድ ${otpCode} እዩ።`
+            }, {
+                headers: {
+                    'accept': 'application/json',
+                    'api-key': process.env.EMAIL_PASS, // ⚠️ ኣብ Render Dashboard እታ EMAIL_PASS ናይ ሓቂ API Key (xkeysib-...) ክትከውን ኣለዋ!
+                    'content-type': 'application/json'
+                }
             });
-            console.log("📨 Email sent successfully through Brevo!");
+            console.log("📨 Email sent successfully through Brevo API!");
         } catch (mailErr) { 
-            console.log("Email error...", mailErr); // እቲ ጌጋ እንተደኣ ሃልዩ ንምርኣይ
+            console.log("Email error...", mailErr.response ? mailErr.response.data : mailErr.message); 
         }
 
         res.status(200).json({ 
