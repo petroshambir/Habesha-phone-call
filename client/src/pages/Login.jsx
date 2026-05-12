@@ -140,7 +140,7 @@ function Login() {
       const currentDeviceId = result.visitorId;
 
       // 2. ነቲ ቁጽሪ ስልክን Device IDን ብሓደ ናብ Backend ንልእኮ
-      const response = await axios.post("http://localhost:5000/api/auth/login", { 
+      const response = await axios.post("https://habesha-phone-call-4.onrender.com/api/auth/login", { 
         phone: fullPhoneNumber,
         deviceId: currentDeviceId // <--- እታ ፍልይቲ ID ኣብዚ ትለኣኽ
       });
@@ -174,7 +174,7 @@ function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login-admin", { 
+      const response = await axios.post("https://habesha-phone-call-4.onrender.com/api/auth/login-admin", { 
         email: adminEmail, 
         password: adminPass 
       });
