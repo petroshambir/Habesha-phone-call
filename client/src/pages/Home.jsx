@@ -453,14 +453,16 @@ function Home({ phone, onLogout }) {
                   <p className="text-white/40 text-xs mt-1 italic tracking-widest">{number}</p>
                 </div>
               ) : (
-                /* 🔄 እታ ዝተስተኻኸለት Input: readOnly ን inputMode="none" ን ተወሲኽዎም ኣሎ (Keyboard ንምዕጻው)፣ እቲ ጽሑፍ ድማ text-5xl font-black ኮይኑ ኣሎ */
+                /* 🔄 እታ ዝተስተኻኸለት Input መስመር ኣብዚኣ ኣላ፦ 
+                   1. readOnly ን inputMode="none" ን ኣእቲና ሙሉእ ብሙሉእ ናይ ስልኪ ኪቦርድ ዓጽይናዮ ኣለና።
+                   2. እቲ ጽሑፍ text-6xl font-black ጌርናዮ ኣለና ንቁጽሪ ብግዙፍ ንምዕባይ። */
                 <input 
                   ref={inputRef} 
                   type="text" 
                   value={number} 
                   readOnly
                   inputMode="none"
-                  className="w-full bg-transparent text-white text-5xl font-black h-14 text-center outline-none italic tracking-widest caret-yellow-400" 
+                  className="w-full bg-transparent text-white text-6xl font-black h-16 text-center outline-none italic tracking-widest caret-yellow-400" 
                   style={{ caretWidth: '2px' }} 
                   onChange={() => {}} 
                 />
