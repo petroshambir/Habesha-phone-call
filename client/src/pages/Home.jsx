@@ -255,7 +255,6 @@
 
 // export default Home;
 
-
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Phone, PhoneOff, Delete, Volume2, VolumeX, LogOut, Clock, Grid, CreditCard } from "lucide-react";
@@ -454,14 +453,14 @@ function Home({ phone, onLogout }) {
                   <p className="text-white/40 text-xs mt-1 italic tracking-widest">{number}</p>
                 </div>
               ) : (
-                /* 🔄 እታ ዝተስተኻኸለት መስመር ኣብዚኣ ኣላ፦ text-6xl font-black ጌርናዮ ኣለና ንቁጽሪ ንምዕባይ */
+                /* 🔄 እታ ዝተስተኻኸለት Input: readOnly ን inputMode="none" ን ተወሲኽዎም ኣሎ (Keyboard ንምዕጻው)፣ እቲ ጽሑፍ ድማ text-5xl font-black ኮይኑ ኣሎ */
                 <input 
                   ref={inputRef} 
                   type="text" 
                   value={number} 
                   readOnly
                   inputMode="none"
-                  className="w-full bg-transparent text-white text-6xl font-black h-16 text-center outline-none italic tracking-widest caret-yellow-400" 
+                  className="w-full bg-transparent text-white text-5xl font-black h-14 text-center outline-none italic tracking-widest caret-yellow-400" 
                   style={{ caretWidth: '2px' }} 
                   onChange={() => {}} 
                 />
