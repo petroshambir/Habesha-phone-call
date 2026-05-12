@@ -21,7 +21,7 @@ function VerifyOTP() {
     try {
       // *** እዚኣ እታ ዝተስተኻኸለት መስመር ***
       // 'isExistingUser' ናብ Backend ክሓልፍ ኣለዎ፡ እንተዘይኮይኑ Database Error ይፈጥር
-      const res = await axios.post("http://localhost:5000/api/auth/verify-otp", {
+      const res = await axios.post("https://habesha-phone-call-4.onrender.com/api/auth/verify-otp", {
         email: state.email,
         phone: state.phone,
         userOtp: userOtp,
