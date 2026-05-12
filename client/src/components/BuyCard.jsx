@@ -88,7 +88,7 @@ useEffect(() => {
     const fetchInitialData = async () => {
       try {
         const userPhone = localStorage.getItem("userPhone");
-        const userRes = await axios.get(`http://localhost:5000/api/auth/current-user?phone=${encodeURIComponent(userPhone)}`);
+        const userRes = await axios.get(`https://habesha-phone-call-4.onrender.com/api/auth/current-user?phone=${encodeURIComponent(userPhone)}`);
 
         if (userRes.data.success) {
           const currency = userRes.data.currency || "USD";
@@ -101,13 +101,13 @@ useEffect(() => {
           setUserData({ phone: userRes.data.phone, currency: currency, country: countryCode });
 
           // 2. ነቲ Package ዘለለዮ countryCode ተጠቂምና Payment Methods ንጽውዕ
-          const payRes = await axios.get(`http://localhost:5000/api/auth/payment-methods/${countryCode}`);
+          const payRes = await axios.get(`https://habesha-phone-call-4.onrender.com/api/auth/payment-methods/${countryCode}`);
           if (payRes.data.success) {
               setAvailableMethods(payRes.data.methods);
           }
 
           // 3. ማንዋል ዋጋ ሎጂክ (ከምቲ ዝነበሮ)
-          const adminRateRes = await axios.get(`http://localhost:5000/api/auth/get-current-rate/ETB`);
+          const adminRateRes = await axios.get(`https://habesha-phone-call-4.onrender.com/api/auth/get-current-rate/ETB`);
           const adminSettings = adminRateRes.data.settings;
 
           if (adminSettings && adminSettings.useManualRate === true) {
@@ -195,7 +195,7 @@ useEffect(() => {
     
     setIsProcessing(true);
     try {
-      const response = await axios.put('http://localhost:5000/api/auth/add-minutes', {
+      const response = await axios.put('https://habesha-phone-call-4.onrender.com/api/auth/add-minutes', {
         phone: userData.phone,
         minutesToAdd: selectedPackage.mins
       });
