@@ -93,6 +93,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Phone, ArrowRight, Lock, Mail, User } from 'lucide-react';
 import axios from 'axios';
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 function Login() {
   const navigate = useNavigate();
@@ -105,26 +106,67 @@ function Login() {
   const [adminPass, setAdminPass] = useState('');
 
   // 1. ተራ ተጠቓሚ ሎጊን (Phone)
+  // const handleUserLogin = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   const fullPhoneNumber = `+${phone}`;
+  //   try {
+  //     const response = await axios.post("http://localhost:5000/api/auth/login", { 
+  //       phone: fullPhoneNumber 
+  //     });
+  //     if (response.data.success) {
+  //       localStorage.setItem("userPhone", fullPhoneNumber);
+  //       navigate('/home', { state: { userPhone: fullPhoneNumber } });
+  //     }
+  //   } catch (err) {
+  //     if (err.response && err.response.status === 404) {
+  //       alert("እዚ ቁጽሪ እዚ ኣይተመዝገበን። በጃኻ ቅድሚ ሎጊን ምግባርካ ተመዝገብ!");
+  //       navigate('/'); 
+  //     } else {
+  //       alert("ገለ ጸገም ተፈጢሩ።");
+  //     }
+  //   } finally { setLoading(false); }
+  // };
+  
   const handleUserLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     const fullPhoneNumber = `+${phone}`;
+
     try {
+      // 1. መጀመሪያ ID ናይታ ስልኪ (Device ID) ንረኽባ
+      const fp = await FingerprintJS.load();
+      const result = await fp.get();
+      const currentDeviceId = result.visitorId;
+
+      // 2. ነቲ ቁጽሪ ስልክን Device IDን ብሓደ ናብ Backend ንልእኮ
       const response = await axios.post("http://localhost:5000/api/auth/login", { 
-        phone: fullPhoneNumber 
+        phone: fullPhoneNumber,
+        deviceId: currentDeviceId // <--- እታ ፍልይቲ ID ኣብዚ ትለኣኽ
       });
+
       if (response.data.success) {
         localStorage.setItem("userPhone", fullPhoneNumber);
         navigate('/home', { state: { userPhone: fullPhoneNumber } });
       }
+
     } catch (err) {
-      if (err.response && err.response.status === 404) {
-        alert("እዚ ቁጽሪ እዚ ኣይተመዝገበን። በጃኻ ቅድሚ ሎጊን ምግባርካ ተመዝገብ!");
-        navigate('/'); 
+      if (err.response) {
+        if (err.response.status === 404) {
+          alert("እዚ ቁጽሪ እዚ ኣይተመዝገበን። በጃኻ ቅድሚ ሎጊን ምግባርካ ተመዝገብ!");
+          navigate('/'); 
+        } else if (err.response.status === 403) {
+          // እቲ Device mismatch (403) ኣብዚ ይርአ
+          alert(err.response.data.msg); 
+        } else {
+          alert("ገለ ጸገም ተፈጢሩ።");
+        }
       } else {
-        alert("ገለ ጸገም ተፈጢሩ።");
+        alert("Server Error. Please try again later.");
       }
-    } finally { setLoading(false); }
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   // 2. ኣድሚን ሎጊን (Email & Password)
