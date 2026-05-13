@@ -784,7 +784,7 @@ function Home({ phone, onLogout }) {
         <button onClick={() => setActiveTab("history")} className={`flex flex-col items-center gap-1 flex-1 py-1 transition-colors ${activeTab === "history" ? "text-yellow-400" : "text-white/20"}`}><Clock size={20} /></button>
         <button onClick={() => setActiveTab("keypad")} className={`flex flex-col items-center gap-1 flex-1 py-1 transition-colors ${activeTab === "keypad" ? "text-yellow-400" : "text-white/20"}`}><Grid size={20} /></button>
       </div> */}
-      <div className="w-full bg-black/90 backdrop-blur-xl border-t border-white/10 flex justify-around items-center py-3 shrink-0">
+      <div className="w-full bg-black/90 backdrop-blur-xl border-t border-violet-900 flex justify-around items-center py-3 shrink-0">
         {/* 🔄 እታ `text-white/20` ዝነበረት ሕጂ ናብ `text-white/50` ተቐይራ ኣላ (ንጹር ንክኸውን) */}
         <button onClick={() => setActiveTab("history")} className={`flex flex-col items-center gap-1 flex-1 py-1 transition-colors ${activeTab === "history" ? "text-yellow-400" : "text-white/50"}`}><Clock size={20} /></button>
         <button onClick={() => setActiveTab("keypad")} className={`flex flex-col items-center gap-1 flex-1 py-1 transition-colors ${activeTab === "keypad" ? "text-yellow-400" : "text-white/50"}`}><Grid size={20} /></button>
