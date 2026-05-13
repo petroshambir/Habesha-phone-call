@@ -638,7 +638,7 @@ function Home({ phone, onLogout }) {
     setCallStatus('ringing');
     setIsAnswered(false);
     
-    // 🔊 እንሆ እቲ ድምጺ ፍልልይ (Off ክኸውን ከሎ 0.2፣ On ክኸውን ከሎ 1.0)
+    // 🔊 እታ ዝተስተኻኸለት ናይ ድምጺ ሎጂክ፦ Off ክኸውን ከሎ 0.2፣ On ክኸውን ከሎ 1.0
     audioRef.current.volume = isSpeakerOn ? 1.0 : 0.2;
     audioRef.current.loop = true;
     audioRef.current.play().catch(e => console.log("Audio play error"));
@@ -686,6 +686,13 @@ function Home({ phone, onLogout }) {
     }
   };
 
+  // 🔄 ቁጽሪ ምስ በዝሐ ባዕሉ እቲ ጽሑፍ ንእሽቶ ዝገብር ሎጂክ (Dynamic Font Size)
+  const getFontSizeClass = () => {
+    if (number.length > 10) return "text-2xl";
+    if (number.length > 6) return "text-3xl";
+    return "text-4xl";
+  };
+
   const dialPadKeys = [
     { key: 1, letters: '' }, { key: 2, letters: 'ABC' }, { key: 3, letters: 'DEF' },
     { key: 4, letters: 'GHI' }, { key: 5, letters: 'JKL' }, { key: 6, letters: 'MNO' },
@@ -721,15 +728,14 @@ function Home({ phone, onLogout }) {
                 </div>
               ) : (
                 /* 🔄 እታ ዝተስተኻኸለት Input መስመር ኣብዚኣ ኣላ፦ 
-                   - text-4xl font-bold ጌርናዮ ኣለና፣ ሕጂ እቲ ሳይዝ ፍጹም ልክዕ እዩ።
-                   - max-w-[280px] ብምእታው ቁጽሪ ምስ በዝሐ ካብ ጎኒ ከይወጽእ ኣብ ማእከል ተሓጺሩ ይተርፍ።
+                   - `getFontSizeClass()` ብምእታው ቁጽሪ ምስ በዝሐ ባዕሉ ይደቅቅ።
                    - inputMode="none" ጥራሕ ስለ ዝገበርና፣ እቲ ከርሰር የማንን ጸጋምን ብነጻ ክንቀሳቀስ ይኽእል እዩ፣ ኪቦርድ ግን ኣይመጽእን እዩ። */
                 <input 
                   ref={inputRef} 
                   type="text" 
                   value={number} 
                   inputMode="none"
-                  className="w-full max-w-[280px] px-2 bg-transparent text-white text-4xl font-bold h-14 text-center outline-none italic tracking-widest caret-yellow-400" 
+                  className={`w-full max-w-[280px] px-2 bg-transparent text-white font-bold h-14 text-center outline-none italic tracking-widest caret-yellow-400 transition-all duration-200 ${getFontSizeClass()}`} 
                   style={{ caretWidth: '2px' }} 
                   onChange={() => {}} 
                 />
