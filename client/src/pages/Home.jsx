@@ -519,6 +519,7 @@
 
 // export default Home;
 
+
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Phone, PhoneOff, Delete, Volume2, VolumeX, LogOut, Clock, Grid, CreditCard } from "lucide-react";
@@ -637,8 +638,8 @@ function Home({ phone, onLogout }) {
     setCallStatus('ringing');
     setIsAnswered(false);
     
-    // 🔊 እታ ዝተስተኻኸለት ናይ ድምጺ ሎጂክ፦ ሕጂ እቲ ንቡር ድምጺ 1.0 (ንጹር) እዩ ዝኸውን
-    audioRef.current.volume = 1.0;
+    // 🔊 እንሆ እቲ ድምጺ ፍልልይ (Off ክኸውን ከሎ 0.2፣ On ክኸውን ከሎ 1.0)
+    audioRef.current.volume = isSpeakerOn ? 1.0 : 0.2;
     audioRef.current.loop = true;
     audioRef.current.play().catch(e => console.log("Audio play error"));
 
@@ -679,9 +680,9 @@ function Home({ phone, onLogout }) {
   const toggleSpeaker = () => {
     const newState = !isSpeakerOn;
     setIsSpeakerOn(newState);
-    // 🔊 ላውድስፒከር ክበራበር ከሎ ድምጺ ሙሉእ ይኸውን
+    // 🔊 ላውድስፒከር ክበራበር ከሎ ድምጺ ሙሉእ (1.0) ይኸውን፣ Off ምስ ኾነ ድማ (0.2) ይኸውን
     if (audioRef.current) {
-      audioRef.current.volume = 1.0; 
+      audioRef.current.volume = newState ? 1.0 : 0.2; 
     }
   };
 
@@ -719,27 +720,21 @@ function Home({ phone, onLogout }) {
                   <p className="text-white/40 text-xs mt-1 italic tracking-widest">{number}</p>
                 </div>
               ) : (
-                /* 🔄 እታ ዝተስተኻኸለት ትኽክለኛ መስመር ኣብዚኣ ኣላ፦ 
-                   - inputMode="none" ን ፖይንተር ኦቨርን ተጠቒምና ኪቦርድ ዓጽይናዮ ኣለና ግን ከርሰር (Blinking Cursor) ተመሊሱ ኣሎ።
-                   - እቲ ሳይዝ ድማ ካብ ጎኒ ከይወጽእ text-4xl sm:text-5xl font-bold ጌርናዮ ኣለና። */
+                /* 🔄 እታ ዝተስተኻኸለት Input መስመር ኣብዚኣ ኣላ፦ 
+                   - text-4xl font-bold ጌርናዮ ኣለና፣ ሕጂ እቲ ሳይዝ ፍጹም ልክዕ እዩ።
+                   - max-w-[280px] ብምእታው ቁጽሪ ምስ በዝሐ ካብ ጎኒ ከይወጽእ ኣብ ማእከል ተሓጺሩ ይተርፍ።
+                   - inputMode="none" ጥራሕ ስለ ዝገበርና፣ እቲ ከርሰር የማንን ጸጋምን ብነጻ ክንቀሳቀስ ይኽእል እዩ፣ ኪቦርድ ግን ኣይመጽእን እዩ። */
                 <input 
                   ref={inputRef} 
                   type="text" 
                   value={number} 
                   inputMode="none"
-                  className="w-full bg-transparent text-white text-4xl sm:text-5xl font-bold h-14 text-center outline-none italic tracking-widest caret-yellow-400 style-keyboard-fix" 
+                  className="w-full max-w-[280px] px-2 bg-transparent text-white text-4xl font-bold h-14 text-center outline-none italic tracking-widest caret-yellow-400" 
                   style={{ caretWidth: '2px' }} 
                   onChange={() => {}} 
                 />
               )}
             </div>
-
-            {/* 🔄 እዚ ኪቦርድ ንላዕሊ ከይመጽእ ዝዓግት ንእሽቶ CSS ማዕጾ እዩ */}
-            <style>{`
-              .style-keyboard-fix {
-                pointer-events: none;
-              }
-            `}</style>
 
             <div className={`grid grid-cols-3 gap-y-2 gap-x-4 max-w-[260px] mx-auto transition-opacity duration-300 ${isCalling ? 'opacity-10 pointer-events-none' : 'opacity-100'}`}>
               {dialPadKeys.map(({ key, letters }) => (
