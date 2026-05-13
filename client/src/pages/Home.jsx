@@ -519,7 +519,6 @@
 
 // export default Home;
 
-
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Phone, PhoneOff, Delete, Volume2, VolumeX, LogOut, Clock, Grid, CreditCard } from "lucide-react";
@@ -638,7 +637,6 @@ function Home({ phone, onLogout }) {
     setCallStatus('ringing');
     setIsAnswered(false);
     
-    // 🔊 እታ ዝተስተኻኸለት ናይ ድምጺ ሎጂክ፦ Off ክኸውን ከሎ 0.2፣ On ክኸውን ከሎ 1.0
     audioRef.current.volume = isSpeakerOn ? 1.0 : 0.2;
     audioRef.current.loop = true;
     audioRef.current.play().catch(e => console.log("Audio play error"));
@@ -680,16 +678,16 @@ function Home({ phone, onLogout }) {
   const toggleSpeaker = () => {
     const newState = !isSpeakerOn;
     setIsSpeakerOn(newState);
-    // 🔊 ላውድስፒከር ክበራበር ከሎ ድምጺ ሙሉእ (1.0) ይኸውን፣ Off ምስ ኾነ ድማ (0.2) ይኸውን
     if (audioRef.current) {
       audioRef.current.volume = newState ? 1.0 : 0.2; 
     }
   };
 
-  // 🔄 ቁጽሪ ምስ በዝሐ ባዕሉ እቲ ጽሑፍ ንእሽቶ ዝገብር ሎጂክ (Dynamic Font Size)
+  // 🔄 እቲ ሕጂ ዝተረደኣናሉ ዳይናሚክ ፎንት ሳይዝ ፈንክሽን (ቁጽሪ ምስ በዝሐ ልክዕ ምስቲ ቦታ Fit ንክኸውን ዝውስን)
   const getFontSizeClass = () => {
-    if (number.length > 10) return "text-2xl";
-    if (number.length > 6) return "text-3xl";
+    if (number.length > 14) return "text-xl";
+    if (number.length > 11) return "text-2xl";
+    if (number.length > 8) return "text-3xl";
     return "text-4xl";
   };
 
@@ -727,15 +725,15 @@ function Home({ phone, onLogout }) {
                   <p className="text-white/40 text-xs mt-1 italic tracking-widest">{number}</p>
                 </div>
               ) : (
-                /* 🔄 እታ ዝተስተኻኸለት Input መስመር ኣብዚኣ ኣላ፦ 
-                   - `getFontSizeClass()` ብምእታው ቁጽሪ ምስ በዝሐ ባዕሉ ይደቅቅ።
-                   - inputMode="none" ጥራሕ ስለ ዝገበርና፣ እቲ ከርሰር የማንን ጸጋምን ብነጻ ክንቀሳቀስ ይኽእል እዩ፣ ኪቦርድ ግን ኣይመጽእን እዩ። */
+                /* 🔄 እታ ዝተስተኻኸለት INPUT መስመር ኣብዚኣ ኣላ፦ 
+                   - እቲ ጽሑፍ ካብታ ማእከል ቦታ ከይወጸ ንኪእከብ `w-full max-w-[280px] text-center` ኮይኑ ኣሎ።
+                   - `${getFontSizeClass()}` ብልክዕ ኣብ ውሽጢ እቲ ጃቫስክሪፕት ስትሪንግ ስለ ዝኣተወ፣ ቁጽሪ እናወሰኸ ክኸይድ ከሎ ባዕሉ እናደቐቐ ልክዕ ምስቲ ቦታ ፊት (Fit) ክኸውን እዩ። */
                 <input 
                   ref={inputRef} 
                   type="text" 
                   value={number} 
                   inputMode="none"
-                  className={`w-full max-w-[280px] px-2 bg-transparent text-white font-bold h-14 text-center outline-none italic tracking-widest caret-yellow-400 transition-all duration-200 ${getFontSizeClass()}`} 
+                  className={`w-full max-w-[280px] px-2 bg-transparent text-white font-bold h-14 text-center outline-none italic tracking-widest caret-yellow-400 transition-all duration-150 ${getFontSizeClass()}`} 
                   style={{ caretWidth: '2px' }} 
                   onChange={() => {}} 
                 />
