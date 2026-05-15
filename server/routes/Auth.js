@@ -657,14 +657,15 @@ router.put('/add-minutes', async (req, res) => {
 
 
 // --- 7. Update Minutes (ደቂቕ ክጎድል ከሎ ኣብ Database ዝቕይር) ---
+// --- 7. Update Minutes (ደቂቕ ክጎድል ከሎ ኣብ Database ብትኽክል ዝቕይር) ---
 router.put('/update-minutes', async (req, res) => {
     const { phone, remainingMinutes } = req.body;
     try {
-        // እቲ ተጠቓሚ ብቁጽሪ ስልኩ ንረኽቦ እሞ ደቂቁ ንቕይሮ
+        // 🔄 እታ ቀንዲ መፍትሒ መስመር፦ ሕጂ እቲ ደቂቕ ብትኽክል ኣብ Database $set (Update) ይኸውን ኣሎ!
         const user = await User.findOneAndUpdate(
             { phoneNumber: phone },
+            { $set: { minutes: remainingMinutes } },
             { returnDocument: 'after' }
-            // { new: true } // ሓድሽ ዝተመሓየሸ ዳታ ንኪመልሰልና
         );
 
         if (!user) {
@@ -677,6 +678,27 @@ router.put('/update-minutes', async (req, res) => {
         res.status(500).json({ success: false, msg: "Server Error" });
     }
 });
+
+// router.put('/update-minutes', async (req, res) => {
+//     const { phone, remainingMinutes } = req.body;
+//     try {
+//         // እቲ ተጠቓሚ ብቁጽሪ ስልኩ ንረኽቦ እሞ ደቂቁ ንቕይሮ
+//         const user = await User.findOneAndUpdate(
+//             { phoneNumber: phone },
+//             { returnDocument: 'after' }
+//             // { new: true } // ሓድሽ ዝተመሓየሸ ዳታ ንኪመልሰልና
+//         );
+
+//         if (!user) {
+//             return res.status(404).json({ success: false, msg: "User not found" });
+//         }
+
+//         res.status(200).json({ success: true, minutes: user.minutes });
+//     } catch (err) {
+//         console.error("Update Minutes Error:", err);
+//         res.status(500).json({ success: false, msg: "Server Error" });
+//     }
+// });
 
 router.post('/check-device', async (req, res) => {
   const { phone, deviceId } = req.body;
