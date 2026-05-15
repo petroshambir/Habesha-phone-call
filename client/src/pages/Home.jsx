@@ -280,7 +280,7 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Phone, PhoneOff, Delete, Volume2, VolumeX, LogOut, Clock, Grid, CreditCard, Video } from "lucide-react"; // 🔄 ቪድዮ ምስሊ ጥራሕ ተወሲኻ ኣላ
 import { useNavigate, useLocation } from "react-router-dom"; 
-import VideoCall from "./VideoCall"; // 🔄 ነቲ ሓዳስ ገጽ ኣብዚ ንጽውዖ
+import VideoCall from "../components/VideoCall"; // 🔄 እቲ ቪድዮ ገጽ ኣላ። እቲ `VideoCall` ኮምፖነንት ውስጥ ዝተረደኣናሉ ዳይናሚክ ቪድዮ ፎን ፎቶ ሳይዝ ፈንክሽን (Fit) ኣሎ።
 
 function Home({ phone, onLogout }) {
   const navigate = useNavigate();
