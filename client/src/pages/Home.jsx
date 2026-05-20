@@ -152,13 +152,13 @@ const startCall = (customNumber = null) => {
     audioRef.current.loop = true;
     audioRef.current.play().catch(e => console.log("Audio play error"));
 
-    setTimeout(() => { 
-        setIsAnswered(true); 
-        setCallStatus('connected'); 
-        audioRef.current.pause();
-    }, 8000);
+    // setTimeout(() => { 
+    //     setIsAnswered(true); 
+    //     setCallStatus('connected'); 
+    //     audioRef.current.pause();
+    // }, 8000);
   };
-  
+
   const handleKeyClick = (val) => {
     if (beepRef.current) { beepRef.current.currentTime = 0; beepRef.current.play().catch(() => { }); }
     const input = inputRef.current;
