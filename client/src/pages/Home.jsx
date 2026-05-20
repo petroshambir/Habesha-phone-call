@@ -76,13 +76,33 @@ function Home({ phone, onLogout }) {
     return () => window.removeEventListener("focus", fetchMinutesFromDB);
   }, [phone, location.state?.refresh]);
 
+  // useEffect(() => {
+  //   let timerInterval;
+  //   if (isCalling && isAnswered && secondsLeft > 0) {
+  //     timerInterval = setInterval(() => {
+  //       setSecondsLeft(prev => {
+  //         const nextValue = prev - 1;
+  //         if (nextValue <= 0) { handleHangUp(); return 0; }
+  //         if (nextValue % 5 === 0) { syncMinutesWithDB(nextValue); }
+  //         if (nextValue === 60) warningVoice.current.play().catch(() => {});
+  //         return nextValue;
+  //       });
+  //     }, 1000);
+  //   }
+  //   return () => clearInterval(timerInterval);
+  // }, [isCalling, isAnswered]);
+
   useEffect(() => {
     let timerInterval;
     if (isCalling && isAnswered && secondsLeft > 0) {
       timerInterval = setInterval(() => {
         setSecondsLeft(prev => {
           const nextValue = prev - 1;
-          if (nextValue <= 0) { handleHangUp(); return 0; }
+          if (nextValue <= 0) { 
+            clearInterval(timerInterval); // 🔄 ነቲ ቆጻሪ ብኡንብኡ ዓጽዎ
+            handleHangUp(0); // 🔄 🎯 00:00 ምዃኑ ን Database ኣገድዶ!
+            return 0; 
+          }
           if (nextValue % 5 === 0) { syncMinutesWithDB(nextValue); }
           if (nextValue === 60) warningVoice.current.play().catch(() => {});
           return nextValue;
@@ -91,9 +111,13 @@ function Home({ phone, onLogout }) {
     }
     return () => clearInterval(timerInterval);
   }, [isCalling, isAnswered]);
-
-  const handleHangUp = async () => {
-    await syncMinutesWithDB(secondsLeft); 
+  
+  const handleHangUp = async (forcedSeconds = null) => {
+    // forcedSeconds እንተመጺኡ (ንኣብነት 0) ንዕኡ ይወስድ፣ እንተዘይኮይኑ ነቲ secondsLeft ይወስድ
+    const finalSecondsToSend = forcedSeconds !== null ? forcedSeconds : secondsLeft;
+    
+    await syncMinutesWithDB(finalSecondsToSend); 
+    
     if (number || callStatus) {
       setCallHistory(prev => [{
         to: number || "Unknown",
@@ -110,6 +134,24 @@ function Home({ phone, onLogout }) {
     audioRef.current.pause();
     audioRef.current.currentTime = 0;
   };
+  // const handleHangUp = async () => {
+  //   await syncMinutesWithDB(secondsLeft); 
+  //   if (number || callStatus) {
+  //     setCallHistory(prev => [{
+  //       to: number || "Unknown",
+  //       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+  //       date: new Date().toLocaleDateString(),
+  //       status: isAnswered ? "Answered" : "Missed"
+  //     }, ...prev]);
+  //   }
+  //   setIsCalling(false);
+  //   setIsAnswered(false);
+  //   setCallStatus(null);
+  //   setNumber(""); 
+    
+  //   audioRef.current.pause();
+  //   audioRef.current.currentTime = 0;
+  // };
 
   
 
