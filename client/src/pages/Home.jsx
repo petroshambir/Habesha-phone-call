@@ -111,25 +111,7 @@ function Home({ phone, onLogout }) {
     audioRef.current.currentTime = 0;
   };
 
-  // const startCall = (customNumber = null) => {
-  //   const targetNumber = String(customNumber || number || ""); 
-  //   if (!targetNumber || targetNumber.trim().length < 10) return alert("Enter a valid number!");
-  //   if (secondsLeft <= 0) return alert("No minutes left!");
-
-  //   setIsCalling(true);
-  //   setCallStatus('ringing');
-  //   setIsAnswered(false);
-    
-  //   audioRef.current.volume = isSpeakerOn ? 1.0 : 0.2;
-  //   audioRef.current.loop = true;
-  //   audioRef.current.play().catch(e => console.log("Audio play error"));
-
-  //   setTimeout(() => { 
-  //       setIsAnswered(true); 
-  //       setCallStatus('connected'); 
-  //       audioRef.current.pause();
-  //   }, 8000);
-  // };
+  
 
 const startCall = (customNumber = null) => {
     const targetNumber = String(customNumber || number || "").trim(); 
@@ -153,11 +135,11 @@ const startCall = (customNumber = null) => {
     audioRef.current.loop = true;
     audioRef.current.play().catch(e => console.log("Audio play error"));
 
-    // setTimeout(() => { 
-    //     setIsAnswered(true); 
-    //     setCallStatus('connected'); 
-    //     audioRef.current.pause();
-    // }, 8000);
+    setTimeout(() => { 
+        setIsAnswered(true); 
+        setCallStatus('connected'); 
+        audioRef.current.pause();
+    }, 8000);
   };
 
   const handleKeyClick = (val) => {
