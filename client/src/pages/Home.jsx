@@ -100,8 +100,8 @@ function Home({ phone, onLogout }) {
           const nextValue = prev - 1;
           if (nextValue <= 0) { 
             clearInterval(timerInterval); // 🔄 ነቲ ቆጻሪ ብኡንብኡ ዓጽዎ
-            handleHangUp(0); // 🔄 🎯 00:00 ምዃኑ ን Database ኣገድዶ!
-            return 0; 
+            handleHangUp(0.01); // 🔄 🎯 00:00 ምዃኑ ን Database ኣገድዶ!
+            return 0.01; 
           }
           if (nextValue % 5 === 0) { syncMinutesWithDB(nextValue); }
           if (nextValue === 60) warningVoice.current.play().catch(() => {});
@@ -111,7 +111,7 @@ function Home({ phone, onLogout }) {
     }
     return () => clearInterval(timerInterval);
   }, [isCalling, isAnswered]);
-  
+
   const handleHangUp = async (forcedSeconds = null) => {
     // forcedSeconds እንተመጺኡ (ንኣብነት 0) ንዕኡ ይወስድ፣ እንተዘይኮይኑ ነቲ secondsLeft ይወስድ
     const finalSecondsToSend = forcedSeconds !== null ? forcedSeconds : secondsLeft;
