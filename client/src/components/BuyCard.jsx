@@ -33,55 +33,39 @@ const BuyCard = () => {
 //     const fetchInitialData = async () => {
 //       try {
 //         const userPhone = localStorage.getItem("userPhone");
-//         // 1. መጀመሪያ Current User Info ነምጽእ
-//         const userRes = await axios.get(`http://localhost:5000/api/auth/current-user?phone=${encodeURIComponent(userPhone)}`);
+//         const userRes = await axios.get(`https://habesha-phone-call-4.onrender.com/api/auth/current-user?phone=${encodeURIComponent(userPhone)}`);
 
 //         if (userRes.data.success) {
 //           const currency = userRes.data.currency || "USD";
           
-//           // --- ቀንዲ መፍትሒ: እቲ Country Code ካብ ስልኪ ተበጊስና ነረጋግጾ ---
-//           let countryCode = userRes.data.country;
-//           if (!countryCode || countryCode === "Unknown") {
-//               if (userPhone.startsWith("+256")) countryCode = "UG";
-//               else if (userPhone.startsWith("+251")) countryCode = "ET";
-//               else if (userPhone.startsWith("+254")) countryCode = "KE";
-//               else countryCode = "DEFAULT";
-//           }
-          
+//           // --- ፕሮፌሽናል መፍትሒ: እቲ Package ባዕሉ ሃገር የለሊ ---
+//           const phoneNumber = parsePhoneNumberFromString(userPhone);
+//           const countryCode = phoneNumber ? phoneNumber.country : "DEFAULT"; 
+//           // ሕጂ countryCode ባዕሉ "AO", "SS", "UG", "ET" ወዘተ ይኸውን ኣሎ።
+
 //           setUserData({ phone: userRes.data.phone, currency: currency, country: countryCode });
 
-//           // 2. ነቲ ዝተረጋገጸ countryCode ተጠቂምና Payment Methods ንጽውዕ
-//           const payRes = await axios.get(`http://localhost:5000/api/auth/payment-methods/${countryCode}`);
+//           // 2. ነቲ Package ዘለለዮ countryCode ተጠቂምና Payment Methods ንጽውዕ
+//           const payRes = await axios.get(`https://habesha-phone-call-4.onrender.com/api/auth/payment-methods/${countryCode}`);
 //           if (payRes.data.success) {
 //               setAvailableMethods(payRes.data.methods);
 //           }
 
-//           // 3. ማንዋል ዋጋ ንኹሉ ዓሚል (Sync Logic)
-//           try {
-//             const adminRateRes = await axios.get(`http://localhost:5000/api/auth/get-current-rate/ETB`);
-//             const adminSettings = adminRateRes.data.settings;
+//           // 3. ማንዋል ዋጋ ሎጂክ (ከምቲ ዝነበሮ)
+//           const adminRateRes = await axios.get(`https://habesha-phone-call-4.onrender.com/api/auth/get-current-rate/ETB`);
+//           const adminSettings = adminRateRes.data.settings;
 
-//             if (adminSettings && adminSettings.useManualRate === true) {
-//               // ማንዋል እንተኾይኑ፡ ነቲ ዋጋኻ ኣብቲ ናይቲ ዓሚል Currency ንጥቀመሉ
-//               setLiveRates({ [currency]: adminSettings.manualRate });
-//             } else {
-//               // ኣቶማቲክ እንተኾይኑ ካብ ኢንተርነት ይወስድ
-//               const rateRes = await axios.get('https://open.er-api.com/v6/latest/USD');
-//               if (rateRes.data && rateRes.data.rates) setLiveRates(rateRes.data.rates);
-//             }
-//           } catch (e) {
+//           if (adminSettings && adminSettings.useManualRate === true) {
+//             setLiveRates({ [currency]: adminSettings.manualRate });
+//           } else {
 //             const rateRes = await axios.get('https://open.er-api.com/v6/latest/USD');
 //             if (rateRes.data && rateRes.data.rates) setLiveRates(rateRes.data.rates);
 //           }
 //         }
-//       } catch (err) { 
-//         console.error("Fetch Error:", err);
-//       } finally { setLoading(false); }
+//       } catch (err) { console.error(err); } finally { setLoading(false); }
 //     };
 
 //     fetchInitialData();
-
-//     // እዛ [navigate] ኣብ ታሕቲ ምህላዋ፡ ዓሚል ናብዚ ፔጅ ብመጸ ቁጽሪ እቲ ዳታ ከምዝሕደስ ትገብር
 //   }, [navigate]);
 
 useEffect(() => {
@@ -93,84 +77,39 @@ useEffect(() => {
         if (userRes.data.success) {
           const currency = userRes.data.currency || "USD";
           
-          // --- ፕሮፌሽናል መፍትሒ: እቲ Package ባዕሉ ሃገር የለሊ ---
+          // 🔄 1. እቲ Package ባዕሉ ሃገር የለሊ
           const phoneNumber = parsePhoneNumberFromString(userPhone);
           const countryCode = phoneNumber ? phoneNumber.country : "DEFAULT"; 
-          // ሕጂ countryCode ባዕሉ "AO", "SS", "UG", "ET" ወዘተ ይኸውን ኣሎ።
 
           setUserData({ phone: userRes.data.phone, currency: currency, country: countryCode });
 
-          // 2. ነቲ Package ዘለለዮ countryCode ተጠቂምና Payment Methods ንጽውዕ
+          // 🔄 2. ነቲ ዝተረጋገጸ countryCode ተጠቂምና Payment Methods ንጽውዕ
           const payRes = await axios.get(`https://habesha-phone-call-4.onrender.com/api/auth/payment-methods/${countryCode}`);
           if (payRes.data.success) {
               setAvailableMethods(payRes.data.methods);
           }
 
-          // 3. ማንዋል ዋጋ ሎጂክ (ከምቲ ዝነበሮ)
-          const adminRateRes = await axios.get(`https://habesha-phone-call-4.onrender.com/api/auth/get-current-rate/ETB`);
+          // 🔄 3. 🎯 እቲ መፍትሒ መስመር፦ ሕጂ በታ ናይቲ ዓሚል Currency ፈልዩ ካብ ሰርቨርና ጥራሕ ዋጋ የውጽእ
+          const adminRateRes = await axios.get(`https://habesha-phone-call-4.onrender.com/api/auth/get-current-rate/${currency}`);
           const adminSettings = adminRateRes.data.settings;
 
-          if (adminSettings && adminSettings.useManualRate === true) {
+          if (adminSettings) {
+            // እቲ ባክ-ኢንድ ባዕሉ Automatic/Manual ፈልዩ ስለ ዝሰደዶ፣ ቀጥታ ነቲ ዝመጸ ዋጋ ንዕቅቦ
             setLiveRates({ [currency]: adminSettings.manualRate });
           } else {
-            const rateRes = await axios.get('https://open.er-api.com/v6/latest/USD');
-            if (rateRes.data && rateRes.data.rates) setLiveRates(rateRes.data.rates);
+            // ገና Settings እንተዘይተፈጢሩሉ ከም ፌልባክ (Fallback)
+            setLiveRates({ [currency]: 1 });
           }
         }
-      } catch (err) { console.error(err); } finally { setLoading(false); }
+      } catch (err) { 
+        console.error("❌ BuyCard Fetch Error:", err); 
+      } finally { 
+        setLoading(false); 
+      }
     };
 
     fetchInitialData();
   }, [navigate]);
-
-// useEffect(() => {
-//     const fetchInitialData = async () => {
-//       try {
-//         const userPhone = localStorage.getItem("userPhone");
-//         const userRes = await axios.get(`http://localhost:5000/api/auth/current-user?phone=${encodeURIComponent(userPhone)}`);
-
-//         if (userRes.data.success) {
-//           let countryCode = userRes.data.country;
-//           if (!countryCode || countryCode === "Unknown") {
-//             if (userPhone.startsWith("+256")) countryCode = "UG";
-//             else if (userPhone.startsWith("+251")) countryCode = "ET";
-//             else countryCode = "DEFAULT";
-//           }
-          
-//           const currency = userRes.data.currency || "USD";
-//           setUserData({ phone: userRes.data.phone, currency: currency, country: countryCode });
-
-//           // --- 1. መጀመሪያ ናትካ Admin Settings ንርአ (እቲ ሓድሽ ዝተወሰኸ) ---
-//           try {
-//             const adminRateRes = await axios.get(`http://localhost:5000/api/auth/get-current-rate/${currency}`);
-//             const adminSettings = adminRateRes.data.settings;
-
-//             if (adminSettings && adminSettings.useManualRate) {
-//               // ባዕልኻ ዝጸሓፍካዮ ዋጋ እንተሃልዩ ንጥቀም
-//               setLiveRates({ [currency]: adminSettings.manualRate });
-//             } else {
-//               // እንተዘይኮይኑ ግን ካብ ኢንተርነት ይወስድ
-//               const rateRes = await axios.get('https://open.er-api.com/v6/latest/USD');
-//               if (rateRes.data && rateRes.data.rates) setLiveRates(rateRes.data.rates);
-//             }
-//           } catch (rateErr) {
-//             // ኣብቲ ሓድሽ API ጸገም እንተጋጢሙ ንከይቋረጽ ካብ ኢንተርነት ይወስድ
-//             const rateRes = await axios.get('https://open.er-api.com/v6/latest/USD');
-//             if (rateRes.data && rateRes.data.rates) setLiveRates(rateRes.data.rates);
-//           }
-
-//           // --- 2. ናይ ባንክታት መገዲ (Payment Methods) ምምጻእ (እቲ ናይ ቀደምካ) ---
-//           const payRes = await axios.get(`http://localhost:5000/api/auth/payment-methods/${countryCode}`);
-//           if (payRes.data.success) setAvailableMethods(payRes.data.methods);
-//         }
-//       } catch (err) { 
-//         console.error("Initial data fetch error:", err); 
-//       } finally { 
-//         setLoading(false); 
-//       }
-//     };
-//     fetchInitialData();
-//   }, []);
 
   const getLocalPrice = (usdPrice) => {
     if (!liveRates || !userData.currency) return usdPrice.toFixed(2); 
