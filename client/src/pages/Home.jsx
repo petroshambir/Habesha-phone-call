@@ -111,11 +111,39 @@ function Home({ phone, onLogout }) {
     audioRef.current.currentTime = 0;
   };
 
-  const startCall = (customNumber = null) => {
-    const targetNumber = String(customNumber || number || ""); 
-    if (!targetNumber || targetNumber.trim().length < 10) return alert("Enter a valid number!");
+  // const startCall = (customNumber = null) => {
+  //   const targetNumber = String(customNumber || number || ""); 
+  //   if (!targetNumber || targetNumber.trim().length < 10) return alert("Enter a valid number!");
+  //   if (secondsLeft <= 0) return alert("No minutes left!");
+
+  //   setIsCalling(true);
+  //   setCallStatus('ringing');
+  //   setIsAnswered(false);
+    
+  //   audioRef.current.volume = isSpeakerOn ? 1.0 : 0.2;
+  //   audioRef.current.loop = true;
+  //   audioRef.current.play().catch(e => console.log("Audio play error"));
+
+  //   setTimeout(() => { 
+  //       setIsAnswered(true); 
+  //       setCallStatus('connected'); 
+  //       audioRef.current.pause();
+  //   }, 8000);
+  // };
+const startCall = (customNumber = null) => {
+    const targetNumber = String(customNumber || number || "").trim(); 
+
+    // 1. ቁጽሪ እንተዘይተጻሒፉ -> ሱቕ ትበል (ወላ ሓንቲ ሪኣክሽን ኣይትሃብ፣ ናብ ምድዋል ኣይተሕልፎ)
+    if (!targetNumber) return; 
+
+    // 2. ቁጽሪ እንተሃልዩ ግን ትሕቲ 10 ኣሃዝ እንተኾይኑ -> "በጃካ ቅኑዕ ቁጺሪ የቱ" በሎ
+    if (targetNumber.length < 10) {
+      return alert("በጃካ ቅኑዕ ቁጺሪ የቱ");
+    }
+
     if (secondsLeft <= 0) return alert("No minutes left!");
 
+    // --- እቲ ዝተረፈ ናይ ምድዋል ሎጂክ ከምዘለዎ ጸኒሑ ኣሎ ---
     setIsCalling(true);
     setCallStatus('ringing');
     setIsAnswered(false);
@@ -130,7 +158,7 @@ function Home({ phone, onLogout }) {
         audioRef.current.pause();
     }, 8000);
   };
-
+  
   const handleKeyClick = (val) => {
     if (beepRef.current) { beepRef.current.currentTime = 0; beepRef.current.play().catch(() => { }); }
     const input = inputRef.current;
