@@ -11,34 +11,100 @@ const Settings = require('../Models/Settings.js');
 
 // 1. Admin ዋጋ ዝቕይረሉ API
 
+// router.post('/admin/update-rate', async (req, res) => {
+//     const { currency, useManualRate, manualRate } = req.body;
+//     try {
+//         // ቀንዲ መፍትሒ፡ $set ተጠቂምና useManualRate (true/false) ብልክዕ ንዕቅቦ
+//         let settings = await Settings.findOneAndUpdate(
+//             { currency: currency },
+//             { 
+//                 $set: { 
+//                     useManualRate: useManualRate, 
+//                     manualRate: Number(manualRate) 
+//                 } 
+//             },
+//             // { upsert: true, new: true }
+//             { upsert: true, returnDocument: 'after' }
+//         );
+//         res.json({ success: true, settings });
+//     } catch (err) { 
+//         res.status(500).json({ success: false }); 
+//     }
+// });
+
 router.post('/admin/update-rate', async (req, res) => {
     const { currency, useManualRate, manualRate } = req.body;
     try {
-        // ቀንዲ መፍትሒ፡ $set ተጠቂምና useManualRate (true/false) ብልክዕ ንዕቅቦ
+        // 🔄 ሓዳስ መፍትሒ፦ እቲ ሬት ባዶ እንተኾይኑ NaN ወይ 0 ከይከውን ንከላኸል
+        const finalRate = manualRate && manualRate !== "" ? Number(manualRate) : 0;
+
         let settings = await Settings.findOneAndUpdate(
             { currency: currency },
             { 
                 $set: { 
                     useManualRate: useManualRate, 
-                    manualRate: Number(manualRate) 
+                    manualRate: finalRate 
                 } 
             },
-            // { upsert: true, new: true }
             { upsert: true, returnDocument: 'after' }
         );
         res.json({ success: true, settings });
     } catch (err) { 
+        console.error("❌ Update Rate Error:", err);
         res.status(500).json({ success: false }); 
     }
 });
 
+
 // 2. እቲ BuyCard ትኽክለኛ ዋጋ ዝሓተሉ API
+// router.get('/get-current-rate/:currency', async (req, res) => {
+//     try {
+//         const settings = await Settings.findOne({ currency: req.params.currency });
+//         res.json({ success: true, settings });
+//     } catch (err) { res.status(500).json({ success: false }); }
+// });
+
 router.get('/get-current-rate/:currency', async (req, res) => {
+    const { currency } = req.params;
     try {
-        const settings = await Settings.findOne({ currency: req.params.currency });
-        res.json({ success: true, settings });
-    } catch (err) { res.status(500).json({ success: false }); }
+        const settings = await Settings.findOne({ currency: currency });
+
+        // 1. እታ ሃገር ኣብ DB እንተሃልያ እሞ ንስኻ "MANUAL" Mode ገይርካያ እንተኔርካ -> ነቲ ናትካ ዋጋ ሃብ
+        if (settings && settings.useManualRate) {
+            return res.json({ success: true, settings });
+        }
+
+        // 2. "AUTOMATIC" Mode እንተኾይኑ ወይ ገና ኣብ DB Settings እንተዘይተፈጢሩሉ -> ካብ ኢንተርኔት ሓቀኛ ዋጋ ኣምጽእ
+        try {
+            // 🌐 ካብ ፍሉጥ ናይ ኢንተርኔት ዋጋ መውጽኢ (ExchangeRate API) ዋጋ ንሓትት
+            const apiRes = await axios.get(`https://open.er-api.com/v6/latest/USD`);
+            const liveRates = apiRes.data.rates; // ኩሉ ዋጋታት የውጽእ
+            
+            // እቲ ናይቲ ሃገር ዋጋ ካብ ኢንተርኔት ንረኽቦ (ንኣብነት 1 USD = 135 KES)
+            const liveRateForCurrency = liveRates[currency] || 1; 
+
+            return res.json({
+                success: true,
+                settings: {
+                    currency: currency,
+                    useManualRate: false,
+                    manualRate: liveRateForCurrency // 👈 ካብ ኢንተርኔት ዝመጸ ሓቀኛ ዋጋ
+                }
+            });
+        } catch (apiErr) {
+            console.log("❌ Internet Rate Fetch Error, falling back to DB if exists");
+            // ኢንተርኔት እንተዘይሰሪሑ ናብቲ ኣብ DB ዘሎ ናይ መወዳእታ ዋጋ ተመለስ
+            return res.json({ 
+                success: true, 
+                settings: settings || { currency: currency, useManualRate: false, manualRate: 1 } 
+            });
+        }
+
+    } catch (err) { 
+        res.status(500).json({ success: false, msg: "Server Error" }); 
+    }
 });
+
 router.get('/payment-methods/:country', async (req, res) => {
     let { country } = req.params;
     
