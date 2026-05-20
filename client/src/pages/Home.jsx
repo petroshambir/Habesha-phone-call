@@ -196,9 +196,9 @@ function Home({ phone, onLogout }) {
                   </div>
                   {/* 🔄 እታ ዝተስተኻኸለት ክፍሊ፦ ኣብ ታሪኽ ኣብ ጎና ናይ ቪድዮ ምስሊ ቁልፍ ተገጢማ ኣላ */}
                   <div className="flex items-center gap-1">
-                    <button onClick={() => { setNumber(log.to); setActiveTab("video"); }} className="p-2 hover:bg-yellow-500/20 rounded-full transition-colors">
+                    {/* <button onClick={() => { setNumber(log.to); setActiveTab("video"); }} className="p-2 hover:bg-yellow-500/20 rounded-full transition-colors">
                       <Video size={14} className="text-yellow-400" />
-                    </button>
+                    </button> */}
                     <button onClick={() => { setNumber(log.to); setActiveTab("keypad"); setTimeout(() => startCall(log.to), 100); }} className="p-2 hover:bg-green-500/20 rounded-full transition-colors">
                       <Phone size={14} className="text-green-400" />
                     </button>
