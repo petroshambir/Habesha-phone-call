@@ -130,6 +130,7 @@ function Home({ phone, onLogout }) {
   //       audioRef.current.pause();
   //   }, 8000);
   // };
+
 const startCall = (customNumber = null) => {
     const targetNumber = String(customNumber || number || "").trim(); 
 
@@ -275,9 +276,32 @@ const startCall = (customNumber = null) => {
           <button onClick={toggleSpeaker} className={`p-4 rounded-full ${isSpeakerOn ? 'bg-yellow-400 text-black shadow-lg' : 'bg-white/5 border border-white/10'}`}>
             {isSpeakerOn ? <Volume2 size={22} /> : <VolumeX size={22} />}
           </button>
+{/* 
           <button className={`p-6 rounded-full shadow-xl transition-all duration-300 ${isCalling ? 'bg-red-600 scale-110 shadow-red-500/20 rotate-[135deg]' : 'bg-green-500 active:scale-90 shadow-green-500/20'}`} onClick={isCalling ? handleHangUp : startCall}>
             {isCalling ? <PhoneOff size={28} fill="white" /> : <Phone size={28} fill="white" />}
+          </button> */}
+  <button 
+            className={`p-6 rounded-full shadow-xl transition-all duration-300 ${isCalling ? 'bg-red-600 scale-110 shadow-red-500/20 rotate-[135deg]' : 'bg-green-500 active:scale-90 shadow-green-500/20'}`} 
+            onClick={() => {
+              if (isCalling) {
+                handleHangUp();
+              } else {
+                // 1. ቁጽሪ ፈጺሙ እንተዘይተጻሒፉ -> ሱቕ በል (ወላ ሓንቲ ሪኣክሽን ኣይትሃብ)
+                if (!number || number.trim() === "") return;
+
+                // 2. ቁጽሪ እንተሃልዩ ግን ትሕቲ 10 ኣሃዝ እንተኾይኑ -> "በጃካ ቅኑዕ ቁጺሪ የቱ" በሎ
+                if (number.trim().length < 10) {
+                  return alert("በጃካ ቅኑዕ ቁጺሪ የቱ");
+                }
+
+                // 3. ኩሉ ትኽክል እንተኾይኑ ጥራሕ ድውል
+                startCall();
+              }
+            }}
+          >
+            {isCalling ? <PhoneOff size={28} fill="white" /> : <Phone size={28} fill="white" />}
           </button>
+          
           <button className={`p-4 rounded-full bg-white/5 border border-white/10 active:bg-red-500/10 active:text-red-400 transition-colors ${isCalling ? 'opacity-0 pointer-events-none' : 'opacity-100'}`} onClick={handleDelete}><Delete size={22} /></button>
         </div>
       </div>
