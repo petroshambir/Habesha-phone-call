@@ -138,7 +138,7 @@ const startCall = (customNumber = null) => {
     if (!targetNumber) return; 
 
     // 2. ቁጽሪ እንተሃልዩ ግን ትሕቲ 10 ኣሃዝ እንተኾይኑ -> "በጃካ ቅኑዕ ቁጺሪ የቱ" በሎ
-    if (targetNumber.length < 10) {
+    if (targetNumber.length < 8) {
       return alert("በጃካ ቅኑዕ ቁጺሪ የቱ");
     }
 
@@ -301,7 +301,7 @@ const startCall = (customNumber = null) => {
           >
             {isCalling ? <PhoneOff size={28} fill="white" /> : <Phone size={28} fill="white" />}
           </button>
-          
+
           <button className={`p-4 rounded-full bg-white/5 border border-white/10 active:bg-red-500/10 active:text-red-400 transition-colors ${isCalling ? 'opacity-0 pointer-events-none' : 'opacity-100'}`} onClick={handleDelete}><Delete size={22} /></button>
         </div>
       </div>
