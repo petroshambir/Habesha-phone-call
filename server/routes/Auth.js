@@ -11,27 +11,6 @@ const Settings = require('../Models/Settings.js');
 
 // 1. Admin ዋጋ ዝቕይረሉ API
 
-// router.post('/admin/update-rate', async (req, res) => {
-//     const { currency, useManualRate, manualRate } = req.body;
-//     try {
-//         // ቀንዲ መፍትሒ፡ $set ተጠቂምና useManualRate (true/false) ብልክዕ ንዕቅቦ
-//         let settings = await Settings.findOneAndUpdate(
-//             { currency: currency },
-//             { 
-//                 $set: { 
-//                     useManualRate: useManualRate, 
-//                     manualRate: Number(manualRate) 
-//                 } 
-//             },
-//             // { upsert: true, new: true }
-//             { upsert: true, returnDocument: 'after' }
-//         );
-//         res.json({ success: true, settings });
-//     } catch (err) { 
-//         res.status(500).json({ success: false }); 
-//     }
-// });
-
 router.post('/admin/update-rate', async (req, res) => {
     const { currency, useManualRate, manualRate } = req.body;
     try {
@@ -56,13 +35,7 @@ router.post('/admin/update-rate', async (req, res) => {
 });
 
 
-// 2. እቲ BuyCard ትኽክለኛ ዋጋ ዝሓተሉ API
-// router.get('/get-current-rate/:currency', async (req, res) => {
-//     try {
-//         const settings = await Settings.findOne({ currency: req.params.currency });
-//         res.json({ success: true, settings });
-//     } catch (err) { res.status(500).json({ success: false }); }
-// });
+
 
 router.get('/get-current-rate/:currency', async (req, res) => {
     const { currency } = req.params;
@@ -161,7 +134,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// --- 1. Login ---
+
 // --- 1. Login (ምስ Device Binding ዝተወሃሃደ) ---
 router.post('/login', async (req, res) => {
     const { phone, deviceId } = req.body; // ካብ Frontend deviceId ይቕበል
@@ -200,37 +173,6 @@ router.post('/login', async (req, res) => {
 
 
 
-// --- 2. Register ---
-// --- 2. Register (ብናይ Brevo Sender Email ዝተስተኻኸለ) ---
-
-// router.post('/register', async (req, res) => {
-//     const { email, phone, currency } = req.body; 
-//     try {
-//         let userExists = await User.findOne({ $or: [{ email }, { phoneNumber: phone }] });
-//         const isExistingUser = !!userExists; 
-//         const otpCode = Math.floor(1000 + Math.random() * 9000).toString(); 
-        
-//         console.log(`🔥 OTP for ${email}:`, otpCode);
-//         try {
-//             await transporter.sendMail({
-//                 from: 'petroshambirr@gmail.com', // ⚠️ ሕጂ ቀጥታ እቲ ዝተፈቕደ ናይ Brevo Sender Email ጽሒፍናዮ ኣለና
-//                 to: email,
-//                 subject: 'Habesha Tele Code',
-//                 text: `ናትካ ናይ መረጋገጺ ኮድ ${otpCode} እዩ።`
-//             });
-//             console.log("📨 Email sent successfully through Brevo!");
-//         } catch (mailErr) { 
-//             console.log("Email error...", mailErr); // እቲ ጌጋ እንተደኣ ሃልዩ ንምርኣይ
-//         }
-
-//         res.status(200).json({ 
-//             success: true, 
-//             otp: otpCode, 
-//             isExistingUser, 
-//             userData: { email, phone, currency: currency || 'USD' } 
-//         });
-//     } catch (err) { res.status(500).json({ success: false }); }
-// });
 // --- 2. Register (ብናይ Brevo Direct HTTP API ዝተስተኻኸለ - ንRender Timeout ዝሰብር) ---
 router.post('/register', async (req, res) => {
     const { email, phone, currency } = req.body; 
@@ -302,7 +244,7 @@ router.post('/verify-otp', async (req, res) => {
                 user = new User({ 
                     email, 
                     phoneNumber: phone, 
-                    minutes: "10:00", 
+                    minutes: "00:00", 
                     currency: currency || 'USD',
                     country: detectedCountry // <--- እታ ሃገር ኣብዚ ትስፈር (ንኣብነት ET, UG, US)
                 });
@@ -315,7 +257,7 @@ router.post('/verify-otp', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// --- 4. Current User Info ---
+
 
 // --- 4. Current User Info (ዝተስተኻኸለ) ---
 router.get('/current-user', async (req, res) => {
@@ -402,26 +344,7 @@ router.put('/update-minutes', async (req, res) => {
     }
 });
 
-// router.put('/update-minutes', async (req, res) => {
-//     const { phone, remainingMinutes } = req.body;
-//     try {
-//         // እቲ ተጠቓሚ ብቁጽሪ ስልኩ ንረኽቦ እሞ ደቂቁ ንቕይሮ
-//         const user = await User.findOneAndUpdate(
-//             { phoneNumber: phone },
-//             { returnDocument: 'after' }
-//             // { new: true } // ሓድሽ ዝተመሓየሸ ዳታ ንኪመልሰልና
-//         );
 
-//         if (!user) {
-//             return res.status(404).json({ success: false, msg: "User not found" });
-//         }
-
-//         res.status(200).json({ success: true, minutes: user.minutes });
-//     } catch (err) {
-//         console.error("Update Minutes Error:", err);
-//         res.status(500).json({ success: false, msg: "Server Error" });
-//     }
-// });
 
 router.post('/check-device', async (req, res) => {
   const { phone, deviceId } = req.body;
