@@ -13,6 +13,7 @@
   "type": "commonjs",
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^5.2.0",
+    "@telnyx/webrtc": "^2.26.4",
     "axios": "^1.15.2",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
@@ -26,6 +27,7 @@
     "mongoose": "^9.4.1",
     "nodemailer": "^8.0.5",
     "nodemon": "^3.1.14",
-    "socket.io": "^4.8.3"
+    "socket.io": "^4.8.3",
+    "telnyx": "^6.67.0"
   }
 }
