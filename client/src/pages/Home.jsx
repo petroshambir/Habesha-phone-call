@@ -134,55 +134,63 @@ function Home({ phone, onLogout }) {
     audioRef.current.pause();
     audioRef.current.currentTime = 0;
   };
-  // const handleHangUp = async () => {
-  //   await syncMinutesWithDB(secondsLeft); 
-  //   if (number || callStatus) {
-  //     setCallHistory(prev => [{
-  //       to: number || "Unknown",
-  //       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-  //       date: new Date().toLocaleDateString(),
-  //       status: isAnswered ? "Answered" : "Missed"
-  //     }, ...prev]);
-  //   }
-  //   setIsCalling(false);
-  //   setIsAnswered(false);
-  //   setCallStatus(null);
-  //   setNumber(""); 
+ 
+
+// const startCall = (customNumber = null) => {
+//     const targetNumber = String(customNumber || number || "").trim(); 
+
+//     // 1. ቁጽሪ እንተዘይተጻሒፉ -> ሱቕ ትበል (ወላ ሓንቲ ሪኣክሽን ኣይትሃብ፣ ናብ ምድዋል ኣይተሕልፎ)
+//     if (!targetNumber) return; 
+
+//     // 2. ቁጽሪ እንተሃልዩ ግን ትሕቲ 10 ኣሃዝ እንተኾይኑ -> "በጃካ ቅኑዕ ቁጺሪ የቱ" በሎ
+//     if (targetNumber.length < 8) {
+//       return alert("በጃካ ቅኑዕ ቁጺሪ የቱ");
+//     }
+
+//     if (secondsLeft <= 0) return alert("No minutes left!");
+
+//     // --- እቲ ዝተረፈ ናይ ምድዋል ሎጂክ ከምዘለዎ ጸኒሑ ኣሎ ---
+//     setIsCalling(true);
+//     setCallStatus('ringing');
+//     setIsAnswered(false);
     
-  //   audioRef.current.pause();
-  //   audioRef.current.currentTime = 0;
-  // };
+//     audioRef.current.volume = isSpeakerOn ? 1.0 : 0.2;
+//     audioRef.current.loop = true;
+//     audioRef.current.play().catch(e => console.log("Audio play error"));
 
-  
+//     setTimeout(() => { 
+//         setIsAnswered(true); 
+//         setCallStatus('connected'); 
+//         audioRef.current.pause();
+//     }, 8000);
+//   };
 
-const startCall = (customNumber = null) => {
-    const targetNumber = String(customNumber || number || "").trim(); 
 
-    // 1. ቁጽሪ እንተዘይተጻሒፉ -> ሱቕ ትበል (ወላ ሓንቲ ሪኣክሽን ኣይትሃብ፣ ናብ ምድዋል ኣይተሕልፎ)
-    if (!targetNumber) return; 
+const startCall = async (customNumber = null) => {
+  const targetNumber = String(customNumber || number || "").trim(); 
+  if (!targetNumber || targetNumber.length < 8) return alert("በጃካ ቅኑዕ ቁጺሪ የቱ");
+  if (secondsLeft <= 0) return alert("No minutes left!");
 
-    // 2. ቁጽሪ እንተሃልዩ ግን ትሕቲ 10 ኣሃዝ እንተኾይኑ -> "በጃካ ቅኑዕ ቁጺሪ የቱ" በሎ
-    if (targetNumber.length < 8) {
-      return alert("በጃካ ቅኑዕ ቁጺሪ የቱ");
+  setIsCalling(true);
+  setCallStatus('ringing');
+
+  try {
+    // 🔗 ናብ Backend ጻውዒት ይለኣኽ (Telnyx ንኽጅምሮ)
+    const response = await axios.post(`${BACKEND_URL}/api/call/make-call`, {
+      fromNumber: phone, // ናይቲ ዝድውል ዘሎ ሰብ ቁጽሪ
+      toNumber: targetNumber // እቲ ክድወለሉ ዝደለኻ ናይ በሓቂ ቁጽሪ
+    });
+
+    if (response.data.success) {
+      // ነቲ ናይ ድምጺ መለለዪ (Call SID/Control ID) ንዕጽውታ ክንጥቀመሉ ንዕቅቦ
+      localStorage.setItem("currentCallId", response.data.callControlId);
     }
+  } catch (error) {
+    console.error("Call initiation failed", error);
+    handleHangUp();
+  }
+};
 
-    if (secondsLeft <= 0) return alert("No minutes left!");
-
-    // --- እቲ ዝተረፈ ናይ ምድዋል ሎጂክ ከምዘለዎ ጸኒሑ ኣሎ ---
-    setIsCalling(true);
-    setCallStatus('ringing');
-    setIsAnswered(false);
-    
-    audioRef.current.volume = isSpeakerOn ? 1.0 : 0.2;
-    audioRef.current.loop = true;
-    audioRef.current.play().catch(e => console.log("Audio play error"));
-
-    setTimeout(() => { 
-        setIsAnswered(true); 
-        setCallStatus('connected'); 
-        audioRef.current.pause();
-    }, 8000);
-  };
 
   const handleKeyClick = (val) => {
     if (beepRef.current) { beepRef.current.currentTime = 0; beepRef.current.play().catch(() => { }); }
