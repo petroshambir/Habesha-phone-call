@@ -38,66 +38,69 @@ const BuyCard = () => {
 //         if (userRes.data.success) {
 //           const currency = userRes.data.currency || "USD";
           
-//           // --- ፕሮፌሽናል መፍትሒ: እቲ Package ባዕሉ ሃገር የለሊ ---
+//           // 🔄 1. እቲ Package ባዕሉ ሃገር የለሊ
 //           const phoneNumber = parsePhoneNumberFromString(userPhone);
 //           const countryCode = phoneNumber ? phoneNumber.country : "DEFAULT"; 
-//           // ሕጂ countryCode ባዕሉ "AO", "SS", "UG", "ET" ወዘተ ይኸውን ኣሎ።
 
 //           setUserData({ phone: userRes.data.phone, currency: currency, country: countryCode });
 
-//           // 2. ነቲ Package ዘለለዮ countryCode ተጠቂምና Payment Methods ንጽውዕ
+//           // 🔄 2. ነቲ ዝተረጋገጸ countryCode ተጠቂምና Payment Methods ንጽውዕ
 //           const payRes = await axios.get(`https://habesha-phone-call-4.onrender.com/api/auth/payment-methods/${countryCode}`);
 //           if (payRes.data.success) {
 //               setAvailableMethods(payRes.data.methods);
 //           }
 
-//           // 3. ማንዋል ዋጋ ሎጂክ (ከምቲ ዝነበሮ)
-//           const adminRateRes = await axios.get(`https://habesha-phone-call-4.onrender.com/api/auth/get-current-rate/ETB`);
+//           // 🔄 3. 🎯 እቲ መፍትሒ መስመር፦ ሕጂ በታ ናይቲ ዓሚል Currency ፈልዩ ካብ ሰርቨርና ጥራሕ ዋጋ የውጽእ
+//           const adminRateRes = await axios.get(`https://habesha-phone-call-4.onrender.com/api/auth/get-current-rate/${currency}`);
 //           const adminSettings = adminRateRes.data.settings;
 
-//           if (adminSettings && adminSettings.useManualRate === true) {
+//           if (adminSettings) {
+//             // እቲ ባክ-ኢንድ ባዕሉ Automatic/Manual ፈልዩ ስለ ዝሰደዶ፣ ቀጥታ ነቲ ዝመጸ ዋጋ ንዕቅቦ
 //             setLiveRates({ [currency]: adminSettings.manualRate });
 //           } else {
-//             const rateRes = await axios.get('https://open.er-api.com/v6/latest/USD');
-//             if (rateRes.data && rateRes.data.rates) setLiveRates(rateRes.data.rates);
+//             // ገና Settings እንተዘይተፈጢሩሉ ከም ፌልባክ (Fallback)
+//             setLiveRates({ [currency]: 1 });
 //           }
 //         }
-//       } catch (err) { console.error(err); } finally { setLoading(false); }
+//       } catch (err) { 
+//         console.error("❌ BuyCard Fetch Error:", err); 
+//       } finally { 
+//         setLoading(false); 
+//       }
 //     };
 
 //     fetchInitialData();
 //   }, [navigate]);
 
-useEffect(() => {
+// 🔄 ዝተስተኻኸለ useEffect (ብዘይ Warnings ንኹሉ ዳታ ብትኽክል የውጽእ)
+  useEffect(() => {
     const fetchInitialData = async () => {
       try {
         const userPhone = localStorage.getItem("userPhone");
+        if (!userPhone) return navigate("/login");
+
         const userRes = await axios.get(`https://habesha-phone-call-4.onrender.com/api/auth/current-user?phone=${encodeURIComponent(userPhone)}`);
 
         if (userRes.data.success) {
           const currency = userRes.data.currency || "USD";
-          
-          // 🔄 1. እቲ Package ባዕሉ ሃገር የለሊ
           const phoneNumber = parsePhoneNumberFromString(userPhone);
           const countryCode = phoneNumber ? phoneNumber.country : "DEFAULT"; 
 
           setUserData({ phone: userRes.data.phone, currency: currency, country: countryCode });
 
-          // 🔄 2. ነቲ ዝተረጋገጸ countryCode ተጠቂምና Payment Methods ንጽውዕ
+          // 1. ዝተሰማምዐ Payment Methods ምውጻእ
           const payRes = await axios.get(`https://habesha-phone-call-4.onrender.com/api/auth/payment-methods/${countryCode}`);
           if (payRes.data.success) {
               setAvailableMethods(payRes.data.methods);
           }
 
-          // 🔄 3. 🎯 እቲ መፍትሒ መስመር፦ ሕጂ በታ ናይቲ ዓሚል Currency ፈልዩ ካብ ሰርቨርና ጥራሕ ዋጋ የውጽእ
+          // 2. ዋጋ ሬት ምውጻእ
           const adminRateRes = await axios.get(`https://habesha-phone-call-4.onrender.com/api/auth/get-current-rate/${currency}`);
           const adminSettings = adminRateRes.data.settings;
 
           if (adminSettings) {
-            // እቲ ባክ-ኢንድ ባዕሉ Automatic/Manual ፈልዩ ስለ ዝሰደዶ፣ ቀጥታ ነቲ ዝመጸ ዋጋ ንዕቅቦ
             setLiveRates({ [currency]: adminSettings.manualRate });
           } else {
-            // ገና Settings እንተዘይተፈጢሩሉ ከም ፌልባክ (Fallback)
             setLiveRates({ [currency]: 1 });
           }
         }
@@ -110,6 +113,35 @@ useEffect(() => {
 
     fetchInitialData();
   }, [navigate]);
+
+  const getLocalPrice = (usdPrice) => {
+    if (!liveRates || !userData.currency) return usdPrice.toFixed(2); 
+    const rate = liveRates[userData.currency];
+    const total = usdPrice * (rate || 1);
+    return Math.round(total).toLocaleString() + " " + userData.currency;
+  };
+
+  const handleFinalPurchase = async () => {
+    if (!accountNumber || !customerName) return alert("በጃኻ ኩሉ ሓበሬታ ኣእቱ");
+    
+    setIsProcessing(true);
+    try {
+      // 💡 [ኣገዳሲ ነጥቢ] ኣብዚ ቦታ እዚ ናይ ሓቂ ስራሕ ክንጅምር ከለና ናይ Flutterwave/Chapa API ክኣቱ ኣለዎ።
+      // ሕጂ ግን ምስቲ ናትካ Backend ደቂቕ ንምውሳኽ ቀጥታ ይሰርሕ ኣሎ።
+      const response = await axios.put('https://habesha-phone-call-4.onrender.com/api/auth/add-minutes', {
+        phone: userData.phone,
+        minutesToAdd: selectedPackage.mins
+      });
+      
+      if (response.data.success) {
+        setPaymentStep(3);
+      }
+    } catch (err) { 
+      alert("Error processing payment! Please try again."); 
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const getLocalPrice = (usdPrice) => {
     if (!liveRates || !userData.currency) return usdPrice.toFixed(2); 
