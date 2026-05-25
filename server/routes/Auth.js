@@ -1626,7 +1626,7 @@ router.post('/check-device', async (req, res) => {
 //     }
 // });
 
-// 📞 14. Twilio Make Call API
+// 📞 14. Twilio Make Call API (ዝተስተኻኸለ)
 router.post('/call/make-call', async (req, res) => {
     const { fromNumber, toNumber } = req.body;
     try {
@@ -1638,8 +1638,8 @@ router.post('/call/make-call', async (req, res) => {
         // 🚀 Twilio Voice Call Request
         const call = await client.calls.create({
             url: 'http://demo.twilio.com/docs/voice.xml', 
-            to: +256707415421, // እቲ ክትፍትን ዝመዝገብካዮ ናይ በሓቂ ቁጽሪ ስልኪ
-            from: process.env.TWILIO_PHONE_NUMBER 
+            to: '+256707415421', // 🍏 ፍታሕ 1: ከም String (ብደወንቱ) ክቕመጥ ኣለዎ!
+            from: '+12345678901' // 🍏 ፍታሕ 2: እታ ካብ Twilio ዝዓደግካያ ናይ USA ቁጽሪ ኣብዚኣ ብጽሑፍ የእትዋ!
         });
 
         res.json({ success: true, callSid: call.sid });
@@ -1648,6 +1648,7 @@ router.post('/call/make-call', async (req, res) => {
         res.status(500).json({ success: false, msg: "ምድዋል ኣይተኻእለን፣ በጃካ ደጊምካ ፈትን" });
     }
 });
+
 // 🛑 15. Twilio Hangup Call API (👈 ሓዲሽ ዝተወሰኸ መስመር!)
 router.post('/call/hangup-call', async (req, res) => {
     const { callSid } = req.body;
