@@ -2023,6 +2023,29 @@ router.post('/check-device', async (req, res) => {
     }
 });
 
+// // 📞 14. Twilio Make Call API
+// router.post('/call/make-call', async (req, res) => {
+//     const { fromNumber, toNumber } = req.body;
+//     try {
+//         const user = await User.findOne({ phoneNumber: fromNumber });
+//         if (!user || user.minutes === "00:00" || user.minutes.startsWith('-')) {
+//             return res.status(400).json({ success: false, msg: "እኹል ደቂቕ የብልካን በጃካ ካርድ ዓድግ!" });
+//         }
+
+//         const call = await client.calls.create({
+//             url: 'http://demo.twilio.com/docs/voice.xml', 
+//             to: toNumber || '+256707415421', 
+//             from: process.env.TWILIO_PHONE_NUMBER // 🍏 ካብ env ክንበብ ተገይሩ ኣሎ
+//         });
+
+//         res.json({ success: true, callSid: call.sid });
+//     } catch (error) {
+//         console.error("❌ Twilio Call Error:", error);
+//         res.status(500).json({ success: false, msg: "ምድዋል ኣይተኻእለን፣ በጃካ ደጊምካ ፈትን" });
+//     }
+// });
+
+
 // 📞 14. Twilio Make Call API
 router.post('/call/make-call', async (req, res) => {
     const { fromNumber, toNumber } = req.body;
@@ -2035,7 +2058,7 @@ router.post('/call/make-call', async (req, res) => {
         const call = await client.calls.create({
             url: 'http://demo.twilio.com/docs/voice.xml', 
             to: toNumber || '+256707415421', 
-            from: process.env.TWILIO_PHONE_NUMBER // 🍏 ካብ env ክንበብ ተገይሩ ኣሎ
+            from: process.env.TWILIO_PHONE_NUMBER || '+19129554464' // 👈 ከምዚ ጌርካ ነታ ቁጽሪ ኣብዚ እቱዋ!
         });
 
         res.json({ success: true, callSid: call.sid });
