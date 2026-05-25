@@ -186,9 +186,10 @@ app.use(express.json());
 connectDB(); 
 
 // 🛣️ 4. API Routes Connection
-app.use('/api/auth', require('./routes/Auth.js'));   // ናይ Register, Login, Twilio Call
+// app.use('/api/auth', require('./routes/Auth.js'));   // ናይ Register, Login, Twilio Call
 app.use('/api/admin', require('./routes/Admin.js')); // ናይ Stats, Manual Update
 // app.use('/api/call', require('./routes/Auth.js'));
+app.use('/api', require('./routes/Auth.js'));
 
 // 🚀 5. Start Server
 const PORT = process.env.PORT || 5000;
