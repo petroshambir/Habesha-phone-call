@@ -772,8 +772,9 @@ import axios from "axios";
 import { Phone, PhoneOff, Delete, Volume2, VolumeX, LogOut, Clock, Grid, CreditCard } from "lucide-react"; 
 import { useNavigate, useLocation } from "react-router-dom"; 
 
-// 🎯 እቲ ናትካ ናይ Backend URL ኣብዚ ይቕመጥ
-const BACKEND_URL = "https://habesha-phone-call-4.onrender.com";
+// // 🎯 እቲ ናትካ ናይ Backend URL ኣብዚ ይቕመጥ
+// const BACKEND_URL = "https://habesha-phone-call-4.onrender.com";
+const BACKEND_URL = "https://habesha-phone-call-4.onrender.com/api";
 
 function Home({ phone, onLogout }) {
   const navigate = useNavigate();
@@ -901,51 +902,95 @@ function Home({ phone, onLogout }) {
     audioRef.current.currentTime = 0;
   };
 
-  // 📞 ዝተስተኻኸለ ናይ ምድዋል ሎጂክ (Twilio Ready)
-  const startCall = async (customNumber = null) => {
-    const targetNumber = String(customNumber || number || "").trim(); 
-    if (!targetNumber || targetNumber.length < 8) return alert("በጃካ ቅኑዕ ቁጺሪ የቱ");
-    if (secondsLeft <= 0) return alert("No minutes left!");
+  // // 📞 ዝተስተኻኸለ ናይ ምድዋል ሎጂክ (Twilio Ready)
+  // const startCall = async (customNumber = null) => {
+  //   const targetNumber = String(customNumber || number || "").trim(); 
+  //   if (!targetNumber || targetNumber.length < 8) return alert("በጃካ ቅኑዕ ቁጺሪ የቱ");
+  //   if (secondsLeft <= 0) return alert("No minutes left!");
 
-    setIsCalling(true);
-    setCallStatus('ringing');
+  //   setIsCalling(true);
+  //   setCallStatus('ringing');
     
-    // ንግዚኡ ናይ ሪንግ ድምጺ ንምስማዕ
-    audioRef.current.volume = isSpeakerOn ? 1.0 : 0.2;
-    audioRef.current.loop = true;
-    audioRef.current.play().catch(e => console.log("Audio play error"));
+  //   // ንግዚኡ ናይ ሪንግ ድምጺ ንምስማዕ
+  //   audioRef.current.volume = isSpeakerOn ? 1.0 : 0.2;
+  //   audioRef.current.loop = true;
+  //   audioRef.current.play().catch(e => console.log("Audio play error"));
 
-    try {
-      let userPhone = phone || localStorage.getItem("userPhone");
-      if (!userPhone.startsWith('+')) { userPhone = `+${userPhone}`; }
+  //   try {
+  //     let userPhone = phone || localStorage.getItem("userPhone");
+  //     if (!userPhone.startsWith('+')) { userPhone = `+${userPhone}`; }
 
-      // 🔗 ጻውዒት ናብ Standalone Call Router (/api/call) ይለኣኽ
-      const response = await axios.post(`${BACKEND_URL}/api/call/make-call`, {
-        fromNumber: userPhone, 
-        toNumber: targetNumber 
-      });
+  //     // 🔗 ጻውዒት ናብ Standalone Call Router (/api/call) ይለኣኽ
+  //     const response = await axios.post(`${BACKEND_URL}/api/call/make-call`, {
+  //       fromNumber: userPhone, 
+  //       toNumber: targetNumber 
+  //     });
 
-      if (response.data.success) {
-        // 🔥 Twilio ዝሃበና Call SID (መለለዪ ጻውዒት) ንዕጽውታ ክንጥቀመሉ ንዕቅቦ
-        localStorage.setItem("currentCallSid", response.data.callSid);
+  //     if (response.data.success) {
+  //       // 🔥 Twilio ዝሃበና Call SID (መለለዪ ጻውዒት) ንዕጽውታ ክንጥቀመሉ ንዕቅቦ
+  //       localStorage.setItem("currentCallSid", response.data.callSid);
         
-        // 💡 ንግዚኡ እቲ ስልኪ ምስ ተላዕለ ባዕሉ Connected ክኸውን እዚ ጌርናዮ ኣለና
-        setTimeout(() => {
-          setIsAnswered(true);
-          setCallStatus('connected');
-          audioRef.current.pause();
-        }, 5000); 
+  //       // 💡 ንግዚኡ እቲ ስልኪ ምስ ተላዕለ ባዕሉ Connected ክኸውን እዚ ጌርናዮ ኣለና
+  //       setTimeout(() => {
+  //         setIsAnswered(true);
+  //         setCallStatus('connected');
+  //         audioRef.current.pause();
+  //       }, 5000); 
 
-      } else {
-        alert("Call failed: " + (response.data.msg || "Error"));
-        handleHangUp();
-      }
-    } catch (error) {
-      console.error("Call initiation failed", error);
-      alert(error.response?.data?.msg || "ሰርቨር ክራክብ ኣይከኣለን!");
+  //     } else {
+  //       alert("Call failed: " + (response.data.msg || "Error"));
+  //       handleHangUp();
+  //     }
+  //   } catch (error) {
+  //     console.error("Call initiation failed", error);
+  //     alert(error.response?.data?.msg || "ሰርቨር ክራክብ ኣይከኣለን!");
+  //     handleHangUp();
+  //   }
+  // };
+// 📞 ዝተስተኻኸለ ናይ ምድዋል ሎጂክ (Twilio Ready)
+const startCall = async (customNumber = null) => {
+  const targetNumber = String(customNumber || number || "").trim(); 
+  if (!targetNumber || targetNumber.length < 8) return alert("በጃካ ቅኑዕ ቁጺሪ የቱ");
+  if (secondsLeft <= 0) return alert("No minutes left!");
+
+  setIsCalling(true);
+  setCallStatus('ringing');
+  
+  audioRef.current.volume = isSpeakerOn ? 1.0 : 0.2;
+  audioRef.current.loop = true;
+  audioRef.current.play().catch(e => console.log("Audio play error"));
+
+  try {
+    let userPhone = phone || localStorage.getItem("userPhone");
+    if (!userPhone.startsWith('+')) { userPhone = `+${userPhone}`; }
+
+    // 🔗 ጻውዒት ናብቲ API Route ንምልኣኽ
+    // እዚ URL እዚ ምስቲ server.js ናትካ app.use('/api', ...) ክሰማማዕ ኣለዎ
+    const response = await axios.post(`${BACKEND_URL}/api/call/make-call`, {
+      fromNumber: userPhone, 
+      toNumber: targetNumber 
+    });
+
+    if (response.data.success) {
+      localStorage.setItem("currentCallSid", response.data.callSid);
+      
+      setTimeout(() => {
+        setIsAnswered(true);
+        setCallStatus('connected');
+        audioRef.current.pause();
+      }, 5000); 
+
+    } else {
+      alert("Call failed: " + (response.data.msg || "Error"));
       handleHangUp();
     }
-  };
+  } catch (error) {
+    console.error("Call initiation failed", error);
+    // 404 እንተመጺኡ እዚ ጌጋ እዚ ኢዩ ዝረአ
+    alert(error.response?.data?.msg || "ሰርቨር ክራክብ ኣይከኣለን! (404 Error)");
+    handleHangUp();
+  }
+};
 
   const handleKeyClick = (val) => {
     if (beepRef.current) { beepRef.current.currentTime = 0; beepRef.current.play().catch(() => { }); }
