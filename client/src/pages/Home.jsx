@@ -773,8 +773,7 @@ import { Phone, PhoneOff, Delete, Volume2, VolumeX, LogOut, Clock, Grid, CreditC
 import { useNavigate, useLocation } from "react-router-dom"; 
 
 // // 🎯 እቲ ናትካ ናይ Backend URL ኣብዚ ይቕመጥ
-// const BACKEND_URL = "https://habesha-phone-call-4.onrender.com";
-const BACKEND_URL = "https://habesha-phone-call-4.onrender.com/api";
+const BACKEND_URL = "https://habesha-phone-call-4.onrender.com";
 
 function Home({ phone, onLogout }) {
   const navigate = useNavigate();
