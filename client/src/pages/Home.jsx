@@ -800,8 +800,8 @@ function Home({ phone, onLogout }) {
   };
 
   const audioRef = useRef(new Audio("/sounds/ringings.mp3"));
-  const beepRef = useRef(new Audio("/sounds/dialing.mp3"));
-  const warningVoice = useRef(new Audio("/sounds/dialings.mp3"));
+  // const beepRef = useRef(new Audio("/sounds/dialing.mp3"));
+  // const warningVoice = useRef(new Audio("/sounds/dialings.mp3"));
 
   useEffect(() => {
     localStorage.setItem("callHistory", JSON.stringify(callHistory));
