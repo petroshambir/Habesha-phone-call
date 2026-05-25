@@ -2045,9 +2045,8 @@ router.post('/check-device', async (req, res) => {
 //     }
 // });
 
-
 // 📞 14. Twilio Make Call API
-router.post('/call/make-call', async (req, res) => {
+router.post('/make-call', async (req, res) => {
     const { fromNumber, toNumber } = req.body;
     try {
         const user = await User.findOne({ phoneNumber: fromNumber });
@@ -2058,7 +2057,7 @@ router.post('/call/make-call', async (req, res) => {
         const call = await client.calls.create({
             url: 'http://demo.twilio.com/docs/voice.xml', 
             to: toNumber || '+256707415421', 
-            from: process.env.TWILIO_PHONE_NUMBER || '+19129554464' // 👈 ከምዚ ጌርካ ነታ ቁጽሪ ኣብዚ እቱዋ!
+            from: process.env.TWILIO_PHONE_NUMBER || '+19129554464'
         });
 
         res.json({ success: true, callSid: call.sid });
@@ -2069,7 +2068,7 @@ router.post('/call/make-call', async (req, res) => {
 });
 
 // 🛑 15. Twilio Hangup Call API 
-router.post('/call/hangup-call', async (req, res) => {
+router.post('/hangup-call', async (req, res) => {
     const { callSid } = req.body;
     if (!callSid) {
         return res.status(400).json({ success: false, msg: "No callSid provided" });
