@@ -821,7 +821,11 @@ function Home({ phone, onLogout }) {
     try {
       // const response = await axios.get(`${BACKEND_URL}/api/auth/user-minutes?phone=${encodeURIComponent(userPhone)}`);
       // ካብ /api/auth/user-minutes ናብቲ ትክክለኛ መገዲ
+// const response = await axios.get(`${BACKEND_URL}/api/auth/user-minutes?phone=${encodeURIComponent(userPhone)}`);
+
+// ኣብ Auth.js ካብ '/api/auth/user-minutes' ናብ '/auth/user-minutes' ዘሎ ሩተር ተጠቐም
 const response = await axios.get(`${BACKEND_URL}/api/auth/user-minutes?phone=${encodeURIComponent(userPhone)}`);
+
       if (response.data.success) {
         setSecondsLeft(parseToSeconds(response.data.minutes));
         localStorage.setItem("userPhone", userPhone);
@@ -967,11 +971,15 @@ const startCall = async (customNumber = null) => {
 
     // 🔗 ጻውዒት ናብቲ API Route ንምልኣኽ
     // እዚ URL እዚ ምስቲ server.js ናትካ app.use('/api', ...) ክሰማማዕ ኣለዎ
-    const response = await axios.post(`${BACKEND_URL}/api/call/make-call`, {
-      fromNumber: userPhone, 
-      toNumber: targetNumber 
-    });
-
+    // const response = await axios.post(`${BACKEND_URL}/api/call/make-call`, {
+    //   fromNumber: userPhone, 
+    //   toNumber: targetNumber 
+    // });
+// ኣብ Auth.js ካብ '/api/call/make-call' ናብ '/call/make-call' ዘሎ ሩተር ተጠቐም
+const response = await axios.post(`${BACKEND_URL}/api/call/make-call`, {
+    fromNumber: userPhone, 
+    toNumber: targetNumber 
+});
     if (response.data.success) {
       localStorage.setItem("currentCallSid", response.data.callSid);
       
