@@ -1250,6 +1250,425 @@
 // module.exports = router;
 
 
+// const express = require('express');
+// const router = express.Router();
+// const User = require('../Models/User.js'); 
+// const nodemailer = require('nodemailer');
+// const axios = require('axios');
+// const { parsePhoneNumberFromString } = require('libphonenumber-js');
+// const PaymentMethod = require('../Models/PaymentMethod.js');
+// const Settings = require('../Models/Settings.js');
+// const twilio = require('twilio');
+// const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+// // 1. Admin ዋጋ ዝቕይረሉ API
+// router.post('/admin/update-rate', async (req, res) => {
+//     const { currency, useManualRate, manualRate } = req.body;
+//     try {
+//         let finalRate = manualRate && manualRate !== "" ? Number(manualRate) : 0;
+        
+//         if (isNaN(finalRate)) {
+//             finalRate = 0;
+//         }
+
+//         let settings = await Settings.findOneAndUpdate(
+//             { currency: currency },
+//             { 
+//                 $set: { 
+//                     useManualRate: useManualRate, 
+//                     manualRate: finalRate 
+//                 } 
+//             },
+//             { upsert: true, new: true } 
+//         );
+//         res.json({ success: true, settings });
+//     } catch (err) { 
+//         console.error("❌ Update Rate Error:", err);
+//         res.status(500).json({ success: false, msg: "Server Error" }); 
+//     }
+// });
+
+// // 2. ናይ ሕጂ ዋጋ መውጽኢ API
+// router.get('/get-current-rate/:currency', async (req, res) => {
+//     const { currency } = req.params;
+//     try {
+//         const settings = await Settings.findOne({ currency: currency });
+
+//         if (settings && settings.useManualRate) {
+//             return res.json({ success: true, settings });
+//         }
+
+//         try {
+//             const apiRes = await axios.get(`https://open.er-api.com/v6/latest/USD`);
+//             const liveRates = apiRes.data.rates; 
+//             const liveRateForCurrency = liveRates[currency] || 1; 
+
+//             return res.json({
+//                 success: true,
+//                 settings: {
+//                     currency: currency,
+//                     useManualRate: false,
+//                     manualRate: liveRateForCurrency
+//                 }
+//             });
+//         } catch (apiErr) {
+//             console.log("❌ Internet Rate Fetch Error, falling back to DB if exists");
+//             return res.json({ 
+//                 success: true, 
+//                 settings: settings || { currency: currency, useManualRate: false, manualRate: 1 } 
+//             });
+//         }
+//     } catch (err) { 
+//         res.status(500).json({ success: false, msg: "Server Error" }); 
+//     }
+// });
+
+// // 3. Payment Methods API
+// router.get('/payment-methods/:country', async (req, res) => {
+//     let { country } = req.params;
+//     try {
+//         const initialMethods = {
+//             "ET": [
+//                 { name: "Telebirr", icon: "📱", color: "bg-blue-600", account: "0993501570" },
+//                 { name: "CBE Bank", icon: "🏦", color: "bg-purple-700", account: "1000..." },
+//                 { name: "Abyssinia Bank", icon: "🏛️", color: "bg-yellow-600", account: "8877..." }
+//             ],
+//             "UG": [
+//                 { name: "MTN MoMo", icon: "🟡", color: "bg-yellow-500 text-black", account: "0707415421" },
+//                 { name: "Airtel Money", icon: "🔴", color: "bg-red-600", account: "0707415421" }
+//             ],
+//             "AO": [
+//                 { name: "Unitel Money", icon: "📱", color: "bg-orange-500 text-white", account: "00244..." },
+//                 { name: "BAI Bank", icon: "🏦", color: "bg-blue-800 text-white", account: "AO06..." }
+//             ],
+//             "SS": [
+//                 { name: "m-GURUSH", icon: "💰", color: "bg-green-600 text-white", account: "092..." },
+//                 { name: "Nile Bank", icon: "🏛️", color: "bg-gray-800 text-white", account: "100..." }
+//             ],
+//             "KE": [
+//                 { name: "M-Pesa", icon: "🟢", color: "bg-green-500 text-white", account: "07..." },
+//                 { name: "Equity Bank", icon: "🏦", color: "bg-red-700 text-white", account: "254..." }
+//             ],
+//             "DEFAULT": [
+//                 { name: "Visa / Card", icon: "💳", color: "bg-gray-700 text-white", account: "Online Checkout" }
+//             ]
+//         };
+
+//         const methods = initialMethods[country] || initialMethods["DEFAULT"];
+//         res.json({ success: true, methods });
+//     } catch (err) {
+//         res.status(500).json({ success: false, msg: "Server Error" });
+//     }
+// });
+
+// // 4. SMTP Config (Nodemailer)
+// const transporter = nodemailer.createTransport({
+//     host: 'smtp-relay.brevo.com',
+//     port: 465,         
+//     secure: true,      
+//     auth: {
+//         user: process.env.EMAIL_USER, 
+//         pass: process.env.EMAIL_PASS  
+//     },
+//     tls: { 
+//         rejectUnauthorized: false 
+//     }
+// });
+
+// // 5. Login API
+// router.post('/login', async (req, res) => {
+//     const { phone, deviceId } = req.body; 
+//     try {
+//         const user = await User.findOne({ phoneNumber: phone });
+        
+//         if (!user) {
+//             return res.status(404).json({ success: false, msg: "እዚ ቁጽሪ እዚ ኣይተመዝገበን!" });
+//         }
+
+//         if (!user.deviceId) {
+//             user.deviceId = deviceId; 
+//             await user.save();
+//             return res.status(200).json({ success: true, user });
+//         }
+
+//         if (user.deviceId !== deviceId) {
+//             return res.status(403).json({ 
+//                 success: false, 
+//                 msg: "እዚ ኣካውንት ኣብ ካልእ ስልኪ ተመዝጊቡ ስለዘሎ፡ ካብዚ ስልኪ ክትጥቀሙ ኣይትኽእሉን।" 
+//             });
+//         }
+
+//         res.status(200).json({ success: true, user });
+//     } catch (err) { 
+//         console.error("Login Error:", err);
+//         res.status(500).json({ success: false, msg: "Server Error" }); 
+//     }
+// });
+
+// // 6. Register API (Brevo HTTP API)
+// router.post('/register', async (req, res) => {
+//     const { email, phone, currency } = req.body; 
+//     try {
+//         let userExists = await User.findOne({ $or: [{ email }, { phoneNumber: phone }] });
+//         const isExistingUser = !!userExists; 
+//         const otpCode = Math.floor(1000 + Math.random() * 9000).toString(); 
+        
+//         console.log(`🔥 OTP for ${email}:`, otpCode);
+        
+//         try {
+//             await axios.post('https://api.brevo.com/v3/smtp/email', {
+//                 sender: { name: "Habesha Tele", email: "petroshambirr@gmail.com" },
+//                 to: [{ email: email }],
+//                 subject: "Habesha Tele Code",
+//                 textContent: `ናትካ ናይ መረጋገጺ ኮድ ${otpCode} እዩ።`
+//             }, {
+//                 headers: {
+//                     'accept': 'application/json',
+//                     'api-key': process.env.EMAIL_PASS, 
+//                     'content-type': 'application/json'
+//                 }
+//             });
+//             console.log("📨 Email sent successfully through Brevo API!");
+//         } catch (mailErr) { 
+//             console.error("Email error...", mailErr.response ? mailErr.response.data : mailErr.message); 
+//         }
+
+//         res.status(200).json({ 
+//             success: true, 
+//             otp: otpCode, 
+//             isExistingUser, 
+//             userData: { email, phone, currency: currency || 'USD' } 
+//         });
+//     } catch (err) { 
+//         res.status(500).json({ success: false, msg: "Server Error" }); 
+//     }
+// });
+
+// // 7. Admin Login API
+// router.post('/login-admin', async (req, res) => {
+//     const { email, password } = req.body;
+
+//     if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASS) {
+//         return res.status(200).json({ 
+//             success: true, 
+//             isAdmin: true, 
+//             msg: "Welcome Admin!" 
+//         });
+//     } else {
+//         return res.status(401).json({ success: false, msg: "ኢመይል ወይ ፓስዎርድ ጌጋ እዩ" });
+//     }
+// });
+
+// // 8. Verify OTP API
+// router.post('/verify-otp', async (req, res) => {
+//     const { email, phone, userOtp, actualOtp, isExistingUser, currency } = req.body;
+//     try {
+//         if (String(userOtp) === String(actualOtp)) {
+//             let user;
+//             if (isExistingUser) {
+//                 user = await User.findOne({ phoneNumber: phone });
+//             } else {
+//                 const phoneNumber = parsePhoneNumberFromString(phone);
+//                 const detectedCountry = phoneNumber && phoneNumber.country ? phoneNumber.country : "Unknown";
+
+//                 user = new User({ 
+//                     email, 
+//                     phoneNumber: phone, 
+//                     minutes: "00:00", 
+//                     currency: currency || 'USD',
+//                     country: detectedCountry 
+//                 });
+//                 await user.save();
+//             }
+//             res.status(200).json({ success: true, user });
+//         } else {
+//             res.status(400).json({ success: false, msg: "ዝኣተወ ኮድ ጌጋ እዩ።" });
+//         }
+//     } catch (err) { 
+//         console.error("Verify OTP Error:", err);
+//         res.status(500).json({ success: false, msg: "Server Error" }); 
+//     }
+// });
+
+// // 9. Current User API
+// router.get('/current-user', async (req, res) => {
+//     const phone = req.query.phone; 
+//     try {
+//         let user;
+//         if (phone) {
+//             user = await User.findOne({ phoneNumber: phone });
+//         } else {
+//             user = await User.findOne().sort({ createdAt: -1 });
+//         }
+
+//         if (!user) return res.status(404).json({ success: false, msg: "User not found" });
+
+//         let autoCurrency = user.currency || 'USD';
+     
+//         if (user.country === 'ET') autoCurrency = 'ETB';
+//         else if (user.country === 'UG') autoCurrency = 'UGX';
+//         else if (user.country === 'AO') autoCurrency = 'AOA'; 
+//         else if (user.country === 'SS') autoCurrency = 'SSP'; 
+//         else if (user.country === 'KE') autoCurrency = 'KES'; 
+//         else if (user.country === 'SD') autoCurrency = 'SDG'; 
+
+//         res.status(200).json({ 
+//             success: true, 
+//             phone: user.phoneNumber, 
+//             currency: autoCurrency 
+//         });
+//     } catch (err) { 
+//         res.status(500).json({ success: false, msg: "Server Error" }); 
+//     }
+// });
+
+// // 10. User Minutes API
+// router.get('/user-minutes', async (req, res) => {
+//     const { phone } = req.query;
+//     try {
+//         const user = await User.findOne({ phoneNumber: phone }); 
+//         if (!user) return res.status(404).json({ success: false, msg: "User not found" });
+//         res.status(200).json({ success: true, minutes: user.minutes, currency: user.currency });
+//     } catch (err) { 
+//         res.status(500).json({ success: false, msg: "Server Error" }); 
+//     }
+// });
+
+// // 11. Add Minutes API
+// router.put('/add-minutes', async (req, res) => {
+//     const { phone, minutesToAdd } = req.body;
+//     try {
+//         const user = await User.findOne({ phoneNumber: phone });
+//         if (!user) return res.status(404).json({ success: false, msg: "User not found" });
+
+//         const [m, s] = user.minutes.split(':').map(Number);
+//         let currentTotalSeconds = (m * 60) + (s || 0);
+//         let finalTotalSeconds = currentTotalSeconds + (Number(minutesToAdd) * 60);
+
+//         const finalMinutes = Math.floor(finalTotalSeconds / 60);
+//         const finalSeconds = finalTotalSeconds % 60;
+//         user.minutes = `${finalMinutes}:${finalSeconds.toString().padStart(2, '0')}`;
+
+//         await user.save();
+//         res.status(200).json({ success: true, minutes: user.minutes });
+//     } catch (err) { 
+//         res.status(500).json({ success: false, msg: "Server Error" }); 
+//     }
+// });
+
+// // 12. Update Minutes API
+// router.put('/update-minutes', async (req, res) => {
+//     const { phone, remainingMinutes } = req.body;
+//     try {
+//         const user = await User.findOneAndUpdate(
+//             { phoneNumber: phone },
+//             { $set: { minutes: remainingMinutes } },
+//             { new: true }
+//         );
+
+//         if (!user) {
+//             return res.status(404).json({ success: false, msg: "User not found" });
+//         }
+
+//         res.status(200).json({ success: true, minutes: user.minutes });
+//     } catch (err) {
+//         console.error("Update Minutes Error:", err);
+//         res.status(500).json({ success: false, msg: "Server Error" });
+//     }
+// });
+
+// // 13. Check Device API
+// router.post('/check-device', async (req, res) => {
+//     const { phone, deviceId } = req.body;
+//     try {
+//         const user = await User.findOne({ phoneNumber: phone });
+
+//         if (!user) {
+//             return res.status(404).json({ success: false, msg: "User not found" });
+//         }
+
+//         if (user.deviceId && user.deviceId !== deviceId) {
+//             return res.json({ action: 'BLOCK', msg: 'Device mismatch' });
+//         }
+
+//         if (!user.deviceId) {
+//             user.deviceId = deviceId;
+//             await user.save();
+//         }
+        
+//         res.json({ action: 'ALLOW' });
+//     } catch (err) {
+//         console.error("Check Device Error:", err);
+//         res.status(500).json({ success: false, msg: "Server Error" });
+//     }
+// });
+
+// // // 📞 14. Twilio Make Call API
+// // router.post('/call/make-call', async (req, res) => {
+// //     const { fromNumber, toNumber } = req.body;
+// //     try {
+// //         const user = await User.findOne({ phoneNumber: fromNumber });
+// //         if (!user || user.minutes === "00:00" || user.minutes.startsWith('-')) {
+// //             return res.status(400).json({ success: false, msg: "እኹል ደቂቕ የብልካን በጃካ ካርድ ዓድግ!" });
+// //         }
+
+// //         // 🚀 Twilio Voice Call Request
+// //         const call = await client.calls.create({
+// //             url: 'http://demo.twilio.com/docs/voice.xml', 
+// //             to: toNumber, 
+// //             from: process.env.TWILIO_PHONE_NUMBER 
+// //         });
+
+// //         res.json({ success: true, callSid: call.sid });
+// //     } catch (error) {
+// //         console.error("❌ Twilio Call Error:", error);
+// //         res.status(500).json({ success: false, msg: "ምድዋል ኣይተኻእለን፣ በጃካ ደጊምካ ፈትን" });
+// //     }
+// // });
+
+// // 📞 14. Twilio Make Call API (ዝተስተኻኸለ)
+// router.post('/call/make-call', async (req, res) => {
+//     const { fromNumber, toNumber } = req.body;
+//     try {
+//         const user = await User.findOne({ phoneNumber: fromNumber });
+//         if (!user || user.minutes === "00:00" || user.minutes.startsWith('-')) {
+//             return res.status(400).json({ success: false, msg: "እኹል ደቂቕ የብልካን በጃካ ካርድ ዓድግ!" });
+//         }
+
+//         // 🚀 Twilio Voice Call Request
+//         const call = await client.calls.create({
+//             url: 'http://demo.twilio.com/docs/voice.xml', 
+//             to: '+256707415421', // 🍏 ፍታሕ 1: ከም String (ብደወንቱ) ክቕመጥ ኣለዎ!
+//             from: '+19129554464' // 🍏 ፍታሕ 2: እታ ካብ Twilio ዝዓደግካያ ናይ USA ቁጽሪ ኣብዚኣ ብጽሑፍ የእትዋ!
+//         });
+
+//         res.json({ success: true, callSid: call.sid });
+//     } catch (error) {
+//         console.error("❌ Twilio Call Error:", error);
+//         res.status(500).json({ success: false, msg: "ምድዋል ኣይተኻእለን፣ በጃካ ደጊምካ ፈትን" });
+//     }
+// });
+
+// // 🛑 15. Twilio Hangup Call API (👈 ሓዲሽ ዝተወሰኸ መስመር!)
+// router.post('/call/hangup-call', async (req, res) => {
+//     const { callSid } = req.body;
+//     if (!callSid) {
+//         return res.status(400).json({ success: false, msg: "No callSid provided" });
+//     }
+//     try {
+//         // Twilio ነቲ ጻውዒት ብሓይሊ ንክዓጽዎ (Status 'completed' ይገብሮ)
+//         await client.calls(callSid).update({ status: 'completed' });
+//         res.json({ success: true, msg: "Call hung up from Twilio side successfully" });
+//     } catch (error) {
+//         console.error("❌ Twilio Hangup Error:", error);
+//         res.status(500).json({ success: false, msg: "Failed to terminate call from server" });
+//     }
+// });
+
+// module.exports = router;
+
+
+
 const express = require('express');
 const router = express.Router();
 const User = require('../Models/User.js'); 
@@ -1259,7 +1678,13 @@ const { parsePhoneNumberFromString } = require('libphonenumber-js');
 const PaymentMethod = require('../Models/PaymentMethod.js');
 const Settings = require('../Models/Settings.js');
 const twilio = require('twilio');
-const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+// 🎯 ፍታሕ፦ ነቲ Twilio credentials ቀጥታ ካብቲ ናትካ .env ጽሑፋት ባዕሉ ከንብቦ ብልክዕ ኣእቲናዮ ኣለና
+const TWILIO_SID = "ACadd16dfc6797ecfd8702cd9b48fffc79";
+const TWILIO_TOKEN = "aeff48560916a81c91d23b6c3a829576";
+const TWILIO_PHONE = "+19129554464";
+
+const client = twilio(TWILIO_SID, TWILIO_TOKEN);
 
 // 1. Admin ዋጋ ዝቕይረሉ API
 router.post('/admin/update-rate', async (req, res) => {
@@ -1279,7 +1704,7 @@ router.post('/admin/update-rate', async (req, res) => {
                     manualRate: finalRate 
                 } 
             },
-            { upsert: true, new: true } 
+            { upsert: true, returnDocument: 'after' } // 🍏 MONGOOSE WARNING ለመለወጥ ተስተካክሏል
         );
         res.json({ success: true, settings });
     } catch (err) { 
@@ -1367,8 +1792,8 @@ const transporter = nodemailer.createTransport({
     port: 465,         
     secure: true,      
     auth: {
-        user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_PASS  
+        user: process.env.EMAIL_USER || 'petroshambirr@gmail.com', 
+        pass: process.env.EMAIL_PASS || 'ffymjvbttiokibbd'  
     },
     tls: { 
         rejectUnauthorized: false 
@@ -1424,7 +1849,7 @@ router.post('/register', async (req, res) => {
             }, {
                 headers: {
                     'accept': 'application/json',
-                    'api-key': process.env.EMAIL_PASS, 
+                    'api-key': process.env.EMAIL_PASS || 'ffymjvbttiokibbd', 
                     'content-type': 'application/json'
                 }
             });
@@ -1448,7 +1873,7 @@ router.post('/register', async (req, res) => {
 router.post('/login-admin', async (req, res) => {
     const { email, password } = req.body;
 
-    if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASS) {
+    if (email === (process.env.ADMIN_EMAIL || "admin@habeshatele.com") && password === (process.env.ADMIN_PASS || "Admin@1234")) {
         return res.status(200).json({ 
             success: true, 
             isAdmin: true, 
@@ -1563,7 +1988,7 @@ router.put('/update-minutes', async (req, res) => {
         const user = await User.findOneAndUpdate(
             { phoneNumber: phone },
             { $set: { minutes: remainingMinutes } },
-            { new: true }
+            { returnDocument: 'after' } // 🍏 Mongoose Warning ተስተካክሏል
         );
 
         if (!user) {
@@ -1603,29 +2028,6 @@ router.post('/check-device', async (req, res) => {
     }
 });
 
-// // 📞 14. Twilio Make Call API
-// router.post('/call/make-call', async (req, res) => {
-//     const { fromNumber, toNumber } = req.body;
-//     try {
-//         const user = await User.findOne({ phoneNumber: fromNumber });
-//         if (!user || user.minutes === "00:00" || user.minutes.startsWith('-')) {
-//             return res.status(400).json({ success: false, msg: "እኹል ደቂቕ የብልካን በጃካ ካርድ ዓድግ!" });
-//         }
-
-//         // 🚀 Twilio Voice Call Request
-//         const call = await client.calls.create({
-//             url: 'http://demo.twilio.com/docs/voice.xml', 
-//             to: toNumber, 
-//             from: process.env.TWILIO_PHONE_NUMBER 
-//         });
-
-//         res.json({ success: true, callSid: call.sid });
-//     } catch (error) {
-//         console.error("❌ Twilio Call Error:", error);
-//         res.status(500).json({ success: false, msg: "ምድዋል ኣይተኻእለን፣ በጃካ ደጊምካ ፈትን" });
-//     }
-// });
-
 // 📞 14. Twilio Make Call API (ዝተስተኻኸለ)
 router.post('/call/make-call', async (req, res) => {
     const { fromNumber, toNumber } = req.body;
@@ -1636,10 +2038,11 @@ router.post('/call/make-call', async (req, res) => {
         }
 
         // 🚀 Twilio Voice Call Request
+        // 💡 ፍታሕ፦ ንመጻኢ ካብ ፎንካ ዝመጽእ toNumber ንኽድውል 'toNumber' ተኪእናዮ ኣለና
         const call = await client.calls.create({
             url: 'http://demo.twilio.com/docs/voice.xml', 
-            to: '+256707415421', // 🍏 ፍታሕ 1: ከም String (ብደወንቱ) ክቕመጥ ኣለዎ!
-            from: '+19129554464' // 🍏 ፍታሕ 2: እታ ካብ Twilio ዝዓደግካያ ናይ USA ቁጽሪ ኣብዚኣ ብጽሑፍ የእትዋ!
+            to: toNumber || '+256707415421', 
+            from: TWILIO_PHONE
         });
 
         res.json({ success: true, callSid: call.sid });
@@ -1649,14 +2052,13 @@ router.post('/call/make-call', async (req, res) => {
     }
 });
 
-// 🛑 15. Twilio Hangup Call API (👈 ሓዲሽ ዝተወሰኸ መስመር!)
+// 🛑 15. Twilio Hangup Call API 
 router.post('/call/hangup-call', async (req, res) => {
     const { callSid } = req.body;
     if (!callSid) {
         return res.status(400).json({ success: false, msg: "No callSid provided" });
     }
     try {
-        // Twilio ነቲ ጻውዒት ብሓይሊ ንክዓጽዎ (Status 'completed' ይገብሮ)
         await client.calls(callSid).update({ status: 'completed' });
         res.json({ success: true, msg: "Call hung up from Twilio side successfully" });
     } catch (error) {
