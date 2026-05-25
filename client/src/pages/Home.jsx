@@ -821,10 +821,9 @@ function Home({ phone, onLogout }) {
     try {
       // const response = await axios.get(`${BACKEND_URL}/api/auth/user-minutes?phone=${encodeURIComponent(userPhone)}`);
       // ካብ /api/auth/user-minutes ናብቲ ትክክለኛ መገዲ
-// const response = await axios.get(`${BACKEND_URL}/api/auth/user-minutes?phone=${encodeURIComponent(userPhone)}`);
+ const response = await axios.get(`${BACKEND_URL}/api/auth/user-minutes?phone=${encodeURIComponent(userPhone)}`);
 
-// ኣብ Auth.js ካብ '/api/auth/user-minutes' ናብ '/auth/user-minutes' ዘሎ ሩተር ተጠቐም
-const response = await axios.get(`${BACKEND_URL}/api/auth/user-minutes?phone=${encodeURIComponent(userPhone)}`);
+
 
       if (response.data.success) {
         setSecondsLeft(parseToSeconds(response.data.minutes));
