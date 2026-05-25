@@ -1,31 +1,65 @@
-require('dotenv').config();
 
-const express = require('express');
-const cors = require('cors'); // 1. እዚኣ ወስኽ
-const connectDB = require('./config/Db.js');
+// require('dotenv').config();
 
-const app = express();
+// const express = require('express');
+// const cors = require('cors'); 
+// const connectDB = require('./config/Db.js');
 
-// Middleware
+// const app = express();
+
+// // 🌐 1. CORS Configuration (ካብ Frontend ንዝመጽእ Request ማዕጾ ዝኸፍት)
+// app.use(cors({
+//     origin: '*', 
+//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//     credentials: false 
+// }));
+
+// // 📦 2. Body Parser Middleware
+// app.use(express.json());
+
+// // 🗄️ 3. Connect to MongoDB Atlas
+// connectDB(); 
+
+// // 🛣️ 4. API Routes Connection
+// // (እቲ ኩሉ ኮድ ኣብ Auth.js ጥራይ እንተሃልዩ እዛ መስመር ጥራይ እያ እትድልየካ)
+// app.use('/api/auth', require('./routes/Auth.js'));
+
+// // እንተድአ ናይ Admin ዝተፈለየ ፋይል ሃልዩካ እዛ ንታሕቲ ዘላ ከፊትካ ተጠቐምላ:
+// app.use('/api/admin', require('./routes/Admin.js'));
+
+// // 🚀 5. Start Server
+// const PORT = process.env.PORT || 5000;
+// app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+
+// require('dotenv').config();
+
+// const express = require('express');
+// const cors = require('cors'); // 1. እዚኣ ወስኽ
+// const connectDB = require('./config/Db.js');
+
+// const app = express();
+
+// // Middleware
  
-// --- ሓድሽ ናይ CORS ኣወዳድባ (ማዕጾ ምሉእ ብምሉእ ዝኸፈተ) ---
-app.use(cors({
-    origin: '*', // 👈 ንኹሉ ፍሮንትኢንድ ይፈቅድ፣ እቲ CORS Error ሕጂ ክጠፍእ እዩ!
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: false // origin '*' ክኸውን ከሎ credentials false ክኸውን ኣለዎ
-}));
+// // --- ሓድሽ ናይ CORS ኣወዳድባ (ማዕጾ ምሉእ ብምሉእ ዝኸፈተ) ---
+// app.use(cors({
+//     origin: '*', // 👈 ንኹሉ ፍሮንትኢንድ ይፈቅድ፣ እቲ CORS Error ሕጂ ክጠፍእ እዩ!
+//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//     credentials: false // origin '*' ክኸውን ከሎ credentials false ክኸውን ኣለዎ
+// }));
 
-app.use(express.json());
+// app.use(express.json());
 
-// MongoDB Connection
-connectDB(); 
-app.use('/api/admin', require('./routes/Admin.js'));
-// Routes - 3. ነቶም Routes ኣብዚ ኣእትዎም
-// እቲ ናይ Register ን Login ን ኮድ ኣብ routes/auth.js እንተሃሊዩ:
-app.use('/api/auth', require('./routes/Auth.js'));
+// // MongoDB Connection
+// connectDB(); 
+// app.use('/api/admin', require('./routes/Admin.js'));
+// // Routes - 3. ነቶም Routes ኣብዚ ኣእትዎም
+// // እቲ ናይ Register ን Login ን ኮድ ኣብ routes/auth.js እንተሃሊዩ:
+// app.use('/api/auth', require('./routes/Auth.js'));
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+// const PORT = process.env.PORT || 5000;
+// app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
 
 
@@ -127,3 +161,34 @@ app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
 // // 🔄 ሓዳስ ክፍሊ 6፦ ሕጂ ኣብ ክንዲ app.listen፣ በቲ ሓዳስ `server.listen` ጌርና ኢና ነበጋግሶ
 // server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+
+
+require('dotenv').config();
+
+const express = require('express');
+const cors = require('cors'); 
+const connectDB = require('./config/Db.js'); // 👈 ናይ Database መላገጺ ፋይልካ
+
+const app = express();
+
+// 🌐 1. CORS Configuration
+app.use(cors({
+    origin: '*', 
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: false 
+}));
+
+// 📦 2. Body Parser Middleware
+app.use(express.json());
+
+// 🗄️ 3. Connect to MongoDB Atlas
+connectDB(); 
+
+// 🛣️ 4. API Routes Connection
+app.use('/api/auth', require('./routes/Auth.js'));   // ናይ Register, Login, Twilio Call
+app.use('/api/admin', require('./routes/Admin.js')); // ናይ Stats, Manual Update
+
+// 🚀 5. Start Server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

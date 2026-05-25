@@ -28,6 +28,7 @@
     "nodemailer": "^8.0.5",
     "nodemon": "^3.1.14",
     "socket.io": "^4.8.3",
-    "telnyx": "^6.67.0"
+    "telnyx": "^6.67.0",
+    "twilio": "^6.0.2"
   }
 }
