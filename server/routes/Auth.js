@@ -2094,8 +2094,23 @@ router.post('/call/make-call', async (req, res) => {
     }
 });
 
+// // 🛑 15. Twilio Hangup Call API 
+// router.post('/hangup-call', async (req, res) => {
+//     const { callSid } = req.body;
+//     if (!callSid) {
+//         return res.status(400).json({ success: false, msg: "No callSid provided" });
+//     }
+//     try {
+//         await client.calls(callSid).update({ status: 'completed' });
+//         res.json({ success: true, msg: "Call hung up from Twilio side successfully" });
+//     } catch (error) {
+//         console.error("❌ Twilio Hangup Error:", error);
+//         res.status(500).json({ success: false, msg: "Failed to terminate call from server" });
+//     }
+// });
+
 // 🛑 15. Twilio Hangup Call API 
-router.post('/hangup-call', async (req, res) => {
+router.post('/call/hangup-call', async (req, res) => { // 🎯 ካብ /hangup-call ናብ /call/hangup-call ቀይራ!
     const { callSid } = req.body;
     if (!callSid) {
         return res.status(400).json({ success: false, msg: "No callSid provided" });
