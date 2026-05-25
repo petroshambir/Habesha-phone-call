@@ -1668,7 +1668,6 @@
 // module.exports = router;
 
 
-
 const express = require('express');
 const router = express.Router();
 const User = require('../Models/User.js'); 
@@ -1679,12 +1678,8 @@ const PaymentMethod = require('../Models/PaymentMethod.js');
 const Settings = require('../Models/Settings.js');
 const twilio = require('twilio');
 
-// 🎯 ፍታሕ፦ ነቲ Twilio credentials ቀጥታ ካብቲ ናትካ .env ጽሑፋት ባዕሉ ከንብቦ ብልክዕ ኣእቲናዮ ኣለና
-const TWILIO_SID = "ACadd16dfc6797ecfd8702cd9b48fffc79";
-const TWILIO_TOKEN = "aeff48560916a81c91d23b6c3a829576";
-const TWILIO_PHONE = "+19129554464";
-
-const client = twilio(TWILIO_SID, TWILIO_TOKEN);
+// 🍏 ቅኑዕ ኣገባብ፦ ነቶም ሚስጥራት ካብ GitHub ንምሕባእ ካብ process.env ንባብዮም
+const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 // 1. Admin ዋጋ ዝቕይረሉ API
 router.post('/admin/update-rate', async (req, res) => {
@@ -1704,7 +1699,7 @@ router.post('/admin/update-rate', async (req, res) => {
                     manualRate: finalRate 
                 } 
             },
-            { upsert: true, returnDocument: 'after' } // 🍏 MONGOOSE WARNING ለመለወጥ ተስተካክሏል
+            { upsert: true, returnDocument: 'after' } 
         );
         res.json({ success: true, settings });
     } catch (err) { 
@@ -1830,7 +1825,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// 6. Register API (Brevo HTTP API)
+// 6. Register API
 router.post('/register', async (req, res) => {
     const { email, phone, currency } = req.body; 
     try {
@@ -1988,7 +1983,7 @@ router.put('/update-minutes', async (req, res) => {
         const user = await User.findOneAndUpdate(
             { phoneNumber: phone },
             { $set: { minutes: remainingMinutes } },
-            { returnDocument: 'after' } // 🍏 Mongoose Warning ተስተካክሏል
+            { returnDocument: 'after' } 
         );
 
         if (!user) {
@@ -2028,7 +2023,7 @@ router.post('/check-device', async (req, res) => {
     }
 });
 
-// 📞 14. Twilio Make Call API (ዝተስተኻኸለ)
+// 📞 14. Twilio Make Call API
 router.post('/call/make-call', async (req, res) => {
     const { fromNumber, toNumber } = req.body;
     try {
@@ -2037,12 +2032,10 @@ router.post('/call/make-call', async (req, res) => {
             return res.status(400).json({ success: false, msg: "እኹል ደቂቕ የብልካን በጃካ ካርድ ዓድግ!" });
         }
 
-        // 🚀 Twilio Voice Call Request
-        // 💡 ፍታሕ፦ ንመጻኢ ካብ ፎንካ ዝመጽእ toNumber ንኽድውል 'toNumber' ተኪእናዮ ኣለና
         const call = await client.calls.create({
             url: 'http://demo.twilio.com/docs/voice.xml', 
             to: toNumber || '+256707415421', 
-            from: TWILIO_PHONE
+            from: process.env.TWILIO_PHONE_NUMBER // 🍏 ካብ env ክንበብ ተገይሩ ኣሎ
         });
 
         res.json({ success: true, callSid: call.sid });
