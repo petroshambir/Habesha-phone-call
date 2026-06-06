@@ -1090,7 +1090,8 @@ const response = await axios.post(`${BACKEND_URL}/api/auth/call/make-call`, {
               // inputMode="none"
               className={`w-full max-w-[320px] px-2 bg-transparent text-white font-bold h-14 text-center outline-none italic tracking-widest caret-yellow-400 transition-all duration-150 ${getFontSizeClass()}`} 
               style={{ caretWidth: '2px' }} 
-              onChange={() => {}} 
+              // onChange={() => {}} 
+              onChange={(e) => setNumber(e.target.value)}
             />
           )}
         </div>
