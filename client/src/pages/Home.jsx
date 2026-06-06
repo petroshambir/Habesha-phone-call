@@ -881,7 +881,7 @@ function Home({ phone, onLogout }) {
     const currentCallSid = localStorage.getItem("currentCallSid");
     if (currentCallSid) {
       try {
-        await axios.post(`${BACKEND_URL}/api/call/hangup-call`, { callSid: currentCallSid });
+        await axios.post(`${BACKEND_URL}/api/auth/call/hangup-call`, { callSid: currentCallSid });
         localStorage.removeItem("currentCallSid");
       } catch (err) {
         console.error("Failed to hangup call from Twilio side", err);
@@ -975,7 +975,7 @@ const startCall = async (customNumber = null) => {
     //   toNumber: targetNumber 
     // });
 // ኣብ Auth.js ካብ '/api/call/make-call' ናብ '/call/make-call' ዘሎ ሩተር ተጠቐም
-const response = await axios.post(`${BACKEND_URL}/api/call/make-call`, {
+const response = await axios.post(`${BACKEND_URL}/api/auth/call/make-call`, {
     fromNumber: userPhone, 
     toNumber: targetNumber 
 });
