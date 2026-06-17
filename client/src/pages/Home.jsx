@@ -558,6 +558,7 @@ function Home({ phone, onLogout }) {
   //   }
   // };
 //// 📞 ዝተስተኻኸለ ናይ ምድዋል ሎጂክ (Twilio Ready)
+
 const startCall = async (customNumber = null) => {
   const targetNumber = String(customNumber || number || "").trim(); 
   if (!targetNumber || targetNumber.length < 8) return alert("በጃካ ቅኑዕ ቁጺሪ የቱ");
@@ -577,10 +578,14 @@ const startCall = async (customNumber = null) => {
 
     // 🔗 ጻውዒት ናብ Backend (Twilio) ይለኣኽ
     // 🍏 ፍታሕ: እቲ URL ካብ /api/auth/call/make-call ናብ /api/call/make-call ተቐይሩ ኣሎ!
-    const response = await axios.post(`${BACKEND_URL}/api/call/make-call`, {
-      fromNumber: userPhone, 
-      toNumber: targetNumber 
-    });
+    // const response = await axios.post(`${BACKEND_URL}/api/call/make-call`, {
+    //   fromNumber: userPhone, 
+    //   toNumber: targetNumber 
+    // });
+    const response = await axios.post(`${BACKEND_URL}/api/auth/call/make-call`, {
+    fromNumber: userPhone, 
+    toNumber: targetNumber 
+});
 
     if (response.data.success) {
       // 🔥 Twilio ዝሃበና Call SID (መለለዪ ጻውዒት) ንዕጽውታ ክንጥቀመሉ ንዕቅቦ

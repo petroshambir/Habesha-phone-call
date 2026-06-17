@@ -614,7 +614,7 @@ const BuyCard = () => {
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1">漏ናቶ ገልዘብ ({userData.currency})</p>
+                <p className="text-[10px] opacity-40 uppercase font-black tracking-widest mb-1">ብትጥቀሙሉ ገንዘብ ({userData.currency})</p>
                 <p className="text-2xl font-black text-green-400 italic font-mono leading-none">{getLocalPrice(card.usd)}</p>
               </div>
             </div>
