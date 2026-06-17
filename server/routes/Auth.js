@@ -1678,6 +1678,10 @@ const PaymentMethod = require('../Models/PaymentMethod.js');
 const Settings = require('../Models/Settings.js');
 const twilio = require('twilio');
 
+console.log("DEBUG: Checking Env Vars...");
+console.log("SID exists:", !!process.env.TWILIO_ACCOUNT_SID);
+console.log("TOKEN exists:", !!process.env.TWILIO_AUTH_TOKEN);
+
 // 🍏 ቅኑዕ ኣገባብ፦ ነቶም ሚስጥራት ካብ GitHub ንምሕባእ ካብ process.env ንባብዮም
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
