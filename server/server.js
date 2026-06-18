@@ -181,6 +181,7 @@ app.use(cors({
 
 // 📦 2. Body Parser Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // ንTwilio ጻውዒት (Form data)
 
 // 🗄️ 3. Connect to MongoDB Atlas
 connectDB(); 

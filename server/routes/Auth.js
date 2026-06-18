@@ -1677,6 +1677,7 @@ const { parsePhoneNumberFromString } = require('libphonenumber-js');
 const PaymentMethod = require('../Models/PaymentMethod.js');
 const Settings = require('../Models/Settings.js');
 const twilio = require('twilio');
+const VoiceResponse = require('twilio').twiml.VoiceResponse;
 
 console.log("DEBUG: Checking Env Vars...");
 console.log("SID exists:", !!process.env.TWILIO_ACCOUNT_SID);
@@ -1684,6 +1685,16 @@ console.log("TOKEN exists:", !!process.env.TWILIO_AUTH_TOKEN);
 
 // 🍏 ቅኑዕ ኣገባብ፦ ነቶም ሚስጥራት ካብ GitHub ንምሕባእ ካብ process.env ንባብዮም
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+router.post('/voice', (req, res) => {
+    const twiml = new VoiceResponse();
+    // እዚ ጻውዒት ናብ ሰብ ክኸይድ እንተደሊኻ
+    twiml.say('Hello, welcome to Habesha phone service.');
+    // ወይ ናብቲ ዝደለኻዮ ቁጽሪ ንምውሳድ
+    // twiml.dial(req.body.To); 
+    
+    res.type('text/xml');
+    res.send(twiml.toString());
+});
 
 // 1. Admin ዋጋ ዝቕይረሉ API
 router.post('/admin/update-rate', async (req, res) => {
@@ -2082,16 +2093,21 @@ router.post('/call/make-call', async (req, res) => {
         }
 
         // ነታ ቁጽሪ ካብ env እንተዘይረኺብዋ ብቐጥታ ነታ ቁጽሪ ባዕልኻ ኣብዚ ጽሓፈላ 👇
-        const twilioFromNumber = process.env.TWILIO_PHONE_NUMBER ? process.env.TWILIO_PHONE_NUMBER.trim() : '+19129554464';
+        const twilioFromNumber = process.env.TWILIO_PHONE_NUMBER ? process.env.TWILIO_PHONE_NUMBER.trim() : '+17374231506';
 
         console.log("☎️ Twilio is dialing from:", twilioFromNumber, "to:", toNumber);
 
-        const call = await client.calls.create({
-            url: 'http://demo.twilio.com/docs/voice.xml', 
-            to: toNumber || '+256707415421', 
-            from: twilioFromNumber // 🎯 ሕጂ ፍጹም ባዶ ክኸውን ኣይክእልን እዩ!
-        });
-
+        // const call = await client.calls.create({
+        //     url: 'http://demo.twilio.com/docs/voice.xml', 
+        //     to: toNumber || '+256707415421', 
+        //     from: twilioFromNumber // 🎯 ሕጂ ፍጹም ባዶ ክኸውን ኣይክእልን እዩ!
+        // });
+const call = await client.calls.create({
+    // ናትካ Render URL + /voice
+    url: 'https://habesha-phone-call-4.onrender.com/api/auth/voice', 
+    to: toNumber, 
+    from: twilioFromNumber
+});
         res.json({ success: true, callSid: call.sid });
     } catch (error) {
         console.error("❌ Twilio Call Error:", error);
