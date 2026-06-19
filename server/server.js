@@ -169,7 +169,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors'); 
 const connectDB = require('./config/Db.js'); // 👈 ናይ Database መላገጺ ፋይልካ
+const twilio = require('twilio');
 
+console.log("SID Check:", process.env.TWILIO_ACCOUNT_SID ? "Found" : "MISSING");
 const app = express();
 
 // 🌐 1. CORS Configuration
