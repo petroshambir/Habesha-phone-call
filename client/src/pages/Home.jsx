@@ -592,11 +592,11 @@ const startCall = async (customNumber = null) => {
       localStorage.setItem("currentCallSid", response.data.callSid);
       
       // 💡 ንግዚኡ እቲ ስልኪ ምስ ተላዕለ (Answered ምስ ኮነ) ባዕሉ Connected ክኸውን እዚ ጌርናዮ ኣለና
-      setTimeout(() => {
-        setIsAnswered(true);
-        setCallStatus('connected');
-        audioRef.current.pause();
-      }, 5000); 
+      // setTimeout(() => {
+      //   setIsAnswered(true);
+      //   setCallStatus('connected');
+      //   audioRef.current.pause();
+      // }, 5000); 
 
     } else {
       alert("Call failed: " + (response.data.msg || "Error"));
