@@ -1689,6 +1689,32 @@ const twilioFromNumber = process.env.TWILIO_PHONE_NUMBER || '+17374231506';
 const client = twilio(accountSid, authToken);
 
 // Twilio Make Call API
+// router.post('/call/make-call', async (req, res) => {
+//     const { fromNumber, toNumber } = req.body;
+//     try {
+//         const user = await User.findOne({ phoneNumber: fromNumber });
+//         // ተጠቃሚ እንተዘየለ ወይ ደቂቕ እንተዘይብሉ
+//         if (!user || user.minutes === "00:00" || user.minutes.startsWith('-')) {
+//             return res.status(400).json({ success: false, msg: "እኹል ደቂቕ የብልካን በጃካ ካርድ ዓድግ!" });
+//         }
+
+//         console.log("☎️ Twilio is dialing from:", twilioFromNumber, "to:", toNumber);
+
+//         const call = await client.calls.create({
+//             url: 'https://habesha-phone-call-4.onrender.com/api/auth/voice', 
+//             to: toNumber, 
+//             from: twilioFromNumber
+//         });
+        
+//         res.json({ success: true, callSid: call.sid });
+//     } catch (error) {
+//         console.error("❌ Twilio Call Error:", error);
+//         res.status(500).json({ success: false, msg: "ምድዋል ኣይተኻእለን፣ በጃካ ደጊምካ ፈትን" });
+//     }
+// });
+
+
+// Twilio Make Call API
 router.post('/call/make-call', async (req, res) => {
     const { fromNumber, toNumber } = req.body;
     try {
@@ -1703,7 +1729,10 @@ router.post('/call/make-call', async (req, res) => {
         const call = await client.calls.create({
             url: 'https://habesha-phone-call-4.onrender.com/api/auth/voice', 
             to: toNumber, 
-            from: twilioFromNumber
+            from: twilioFromNumber,
+            statusCallback: 'https://habesha-phone-call-4.onrender.com/api/auth/call-status',
+            statusCallbackEvent: ['answered', 'completed'],
+            statusCallbackMethod: 'POST'
         });
         
         res.json({ success: true, callSid: call.sid });
@@ -1713,6 +1742,14 @@ router.post('/call/make-call', async (req, res) => {
     }
 });
 
+// 🎯 እዚ Endpoint እዚ ኣብ ግብሪ ክውዕል ኣለዎ (Status Callback)
+router.post('/call-status', (req, res) => {
+    const { CallStatus, CallSid } = req.body;
+    console.log(`📞 Call SID: ${CallSid} | Current Status: ${CallStatus}`);
+    
+    // ኣብዚ እቲ ስልኪ "answered" ምስ ኮነ፡ ኣብ Database ንተጠቃሚ ክተፍልጦ ወይ ክትመዝግቦ ትኽእል
+    res.sendStatus(200); 
+});
 
 
 // 1. Admin ዋጋ ዝቕይረሉ API
