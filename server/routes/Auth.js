@@ -2068,16 +2068,16 @@ router.post('/check-device', async (req, res) => {
         res.status(500).json({ success: false, msg: "Server Error" });
     }
 });
-
 router.post('/voice', (req, res) => {
-    // እቲ 'To' ዝብል ቁጽሪ ትዊሊዮ ባዕሉ ብPOST ይልእኮ
     const toNumber = req.body.To; 
 
-    // እዚ XML እዚ እዩ እቲ ትዊሊዮ ድምጺ ከምዘራኽብ (Bridge) ዝገብር
+    // ነቲ ናትካ ናይ ትዊሊዮ ቁጽሪ ኣብዚ ኣእትዎ (ወይ ካብ process.env ውሰዶ)
+    const myTwilioNumber = process.env.TWILIO_PHONE_NUMBER || '+17374231506';
+
     const twiml = `<?xml version="1.0" encoding="UTF-8"?>
     <Response>
         <Say>Connecting your call...</Say>
-        <Dial>${toNumber}</Dial>
+        <Dial callerId="${myTwilioNumber}">${toNumber}</Dial>
     </Response>`;
     
     res.type('text/xml');
