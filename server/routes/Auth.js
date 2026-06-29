@@ -2077,7 +2077,6 @@ router.post('/voice', (req, res) => {
 
     const twiml = `<?xml version="1.0" encoding="UTF-8"?>
     <Response>
-        // <Say>Connecting your call...</Say>
         <Dial callerId="${myTwilioNumber}">${toNumber}</Dial>
     </Response>`;
     
