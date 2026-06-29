@@ -2068,6 +2068,7 @@ router.post('/check-device', async (req, res) => {
         res.status(500).json({ success: false, msg: "Server Error" });
     }
 });
+
 router.post('/voice', (req, res) => {
     const toNumber = req.body.To; 
 
@@ -2076,7 +2077,7 @@ router.post('/voice', (req, res) => {
 
     const twiml = `<?xml version="1.0" encoding="UTF-8"?>
     <Response>
-        <Say>Connecting your call...</Say>
+        // <Say>Connecting your call...</Say>
         <Dial callerId="${myTwilioNumber}">${toNumber}</Dial>
     </Response>`;
     
