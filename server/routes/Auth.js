@@ -1701,15 +1701,23 @@ router.post('/call/make-call', async (req, res) => {
 
         console.log("☎️ Twilio is dialing from:", twilioFromNumber, "to:", toNumber);
 
+        // const call = await client.calls.create({
+        //     url: 'https://habesha-phone-call-4.onrender.com/api/auth/voice', 
+        //     to: toNumber, 
+        //     from: twilioFromNumber,
+        //     statusCallback: 'https://habesha-phone-call-4.onrender.com/api/auth/call-status',
+        //     statusCallbackEvent: ['answered', 'completed'],
+        //     statusCallbackMethod: 'POST'
+        // });
         const call = await client.calls.create({
-            url: 'https://habesha-phone-call-4.onrender.com/api/auth/voice', 
-            to: toNumber, 
-            from: twilioFromNumber,
-            statusCallback: 'https://habesha-phone-call-4.onrender.com/api/auth/call-status',
-            statusCallbackEvent: ['answered', 'completed'],
-            statusCallbackMethod: 'POST'
-        });
-        
+    url: 'https://habesha-phone-call-4.onrender.com/api/auth/voice', 
+    to: toNumber, 
+    from: twilioFromNumber,
+    timeout: 30, // 30 ሰከንድ ሪንግ ክትገብር ከለኻ ተቀባሊ ዘይተለዓለ እንተኾይኑ ይዓጽዎ
+    statusCallback: 'https://habesha-phone-call-4.onrender.com/api/auth/call-status',
+    statusCallbackEvent: ['completed'], // 'answered' ኣውጺእናዮ
+    statusCallbackMethod: 'POST'
+});
         res.json({ success: true, callSid: call.sid });
     } catch (error) {
         console.error("❌ Twilio Call Error:", error);
