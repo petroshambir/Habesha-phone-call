@@ -1688,31 +1688,6 @@ const twilioFromNumber = process.env.TWILIO_PHONE_NUMBER || '+17374231506';
 // ሓደ ግዜ ጥራይ ንጅምር
 const client = twilio(accountSid, authToken);
 
-// Twilio Make Call API
-// router.post('/call/make-call', async (req, res) => {
-//     const { fromNumber, toNumber } = req.body;
-//     try {
-//         const user = await User.findOne({ phoneNumber: fromNumber });
-//         // ተጠቃሚ እንተዘየለ ወይ ደቂቕ እንተዘይብሉ
-//         if (!user || user.minutes === "00:00" || user.minutes.startsWith('-')) {
-//             return res.status(400).json({ success: false, msg: "እኹል ደቂቕ የብልካን በጃካ ካርድ ዓድግ!" });
-//         }
-
-//         console.log("☎️ Twilio is dialing from:", twilioFromNumber, "to:", toNumber);
-
-//         const call = await client.calls.create({
-//             url: 'https://habesha-phone-call-4.onrender.com/api/auth/voice', 
-//             to: toNumber, 
-//             from: twilioFromNumber
-//         });
-        
-//         res.json({ success: true, callSid: call.sid });
-//     } catch (error) {
-//         console.error("❌ Twilio Call Error:", error);
-//         res.status(500).json({ success: false, msg: "ምድዋል ኣይተኻእለን፣ በጃካ ደጊምካ ፈትን" });
-//     }
-// });
-
 
 // Twilio Make Call API
 router.post('/call/make-call', async (req, res) => {
@@ -1740,7 +1715,7 @@ router.post('/call/make-call', async (req, res) => {
         console.error("❌ Twilio Call Error:", error);
         res.status(500).json({ success: false, msg: "ምድዋል ኣይተኻእለን፣ በጃካ ደጊምካ ፈትን" });
     }
-});
+}); 
 
 // 🎯 እዚ Endpoint እዚ ኣብ ግብሪ ክውዕል ኣለዎ (Status Callback)
 router.post('/call-status', (req, res) => {
@@ -2094,97 +2069,20 @@ router.post('/check-device', async (req, res) => {
     }
 });
 
-// // 📞 14. Twilio Make Call API
-// router.post('/call/make-call', async (req, res) => {
-//     const { fromNumber, toNumber } = req.body;
-//     try {
-//         const user = await User.findOne({ phoneNumber: fromNumber });
-//         if (!user || user.minutes === "00:00" || user.minutes.startsWith('-')) {
-//             return res.status(400).json({ success: false, msg: "እኹል ደቂቕ የብልካን በጃካ ካርድ ዓድግ!" });
-//         }
+router.post('/voice', (req, res) => {
+    // እቲ 'To' ዝብል ቁጽሪ ትዊሊዮ ባዕሉ ብPOST ይልእኮ
+    const toNumber = req.body.To; 
 
-//         const call = await client.calls.create({
-//             url: 'http://demo.twilio.com/docs/voice.xml', 
-//             to: toNumber || '+256707415421', 
-//             from: process.env.TWILIO_PHONE_NUMBER // 🍏 ካብ env ክንበብ ተገይሩ ኣሎ
-//         });
-
-//         res.json({ success: true, callSid: call.sid });
-//     } catch (error) {
-//         console.error("❌ Twilio Call Error:", error);
-//         res.status(500).json({ success: false, msg: "ምድዋል ኣይተኻእለን፣ በጃካ ደጊምካ ፈትን" });
-//     }
-// });
-
-// 📞 14. Twilio Make Call API
-// router.post('/make-call', async (req, res) => {
-//     const { fromNumber, toNumber } = req.body;
-//     try {
-//         const user = await User.findOne({ phoneNumber: fromNumber });
-//         if (!user || user.minutes === "00:00" || user.minutes.startsWith('-')) {
-//             return res.status(400).json({ success: false, msg: "እኹል ደቂቕ የብልካን በጃካ ካርድ ዓድግ!" });
-//         }
-
-//         const call = await client.calls.create({
-//             url: 'http://demo.twilio.com/docs/voice.xml', 
-//             to: toNumber || '+256707415421', 
-//             from: process.env.TWILIO_PHONE_NUMBER || '+19129554464'
-//         });
-
-//         res.json({ success: true, callSid: call.sid });
-//     } catch (error) {
-//         console.error("❌ Twilio Call Error:", error);
-//         res.status(500).json({ success: false, msg: "ምድዋል ኣይተኻእለን፣ በጃካ ደጊምካ ፈትን" });
-//     }
-// });
-
-// 📞 14. Twilio Make Call API (Updated to ensure 'from' is never missing)
-
-// router.post('/call/make-call', async (req, res) => {
-//     const { fromNumber, toNumber } = req.body;
-//     try {
-//         const user = await User.findOne({ phoneNumber: fromNumber });
-//         if (!user || user.minutes === "00:00" || user.minutes.startsWith('-')) {
-//             return res.status(400).json({ success: false, msg: "እኹል ደቂቕ የብልካን በጃካ ካርድ ዓድግ!" });
-//         }
-
-//         // ነታ ቁጽሪ ካብ env እንተዘይረኺብዋ ብቐጥታ ነታ ቁጽሪ ባዕልኻ ኣብዚ ጽሓፈላ 👇
-//         const twilioFromNumber = process.env.TWILIO_PHONE_NUMBER ? process.env.TWILIO_PHONE_NUMBER.trim() : '+17374231506';
-
-//         console.log("☎️ Twilio is dialing from:", twilioFromNumber, "to:", toNumber);
-
-//         // const call = await client.calls.create({
-//         //     url: 'http://demo.twilio.com/docs/voice.xml', 
-//         //     to: toNumber || '+256707415421', 
-//         //     from: twilioFromNumber // 🎯 ሕጂ ፍጹም ባዶ ክኸውን ኣይክእልን እዩ!
-//         // });
-// const call = await client.calls.create({
-//     // ናትካ Render URL + /voice
-//     url: 'https://habesha-phone-call-4.onrender.com/api/auth/voice', 
-//     to: toNumber, 
-//     from: twilioFromNumber
-// });
-//         res.json({ success: true, callSid: call.sid });
-//     } catch (error) {
-//         console.error("❌ Twilio Call Error:", error);
-//         res.status(500).json({ success: false, msg: "ምድዋል ኣይተኻእለን፣ በጃካ ደጊምካ ፈትን" });
-//     }
-// });
-
-// // 🛑 15. Twilio Hangup Call API 
-// router.post('/hangup-call', async (req, res) => {
-//     const { callSid } = req.body;
-//     if (!callSid) {
-//         return res.status(400).json({ success: false, msg: "No callSid provided" });
-//     }
-//     try {
-//         await client.calls(callSid).update({ status: 'completed' });
-//         res.json({ success: true, msg: "Call hung up from Twilio side successfully" });
-//     } catch (error) {
-//         console.error("❌ Twilio Hangup Error:", error);
-//         res.status(500).json({ success: false, msg: "Failed to terminate call from server" });
-//     }
-// });
+    // እዚ XML እዚ እዩ እቲ ትዊሊዮ ድምጺ ከምዘራኽብ (Bridge) ዝገብር
+    const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+        <Say>Connecting your call...</Say>
+        <Dial>${toNumber}</Dial>
+    </Response>`;
+    
+    res.type('text/xml');
+    res.send(twiml);
+});
 
 // 🛑 15. Twilio Hangup Call API 
 router.post('/call/hangup-call', async (req, res) => { // 🎯 ካብ /hangup-call ናብ /call/hangup-call ቀይራ!
