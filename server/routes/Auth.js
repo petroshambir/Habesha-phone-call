@@ -2077,23 +2077,23 @@ router.post('/check-device', async (req, res) => {
     }
 });
 
-router.post('/voice', (req, res) => {
-    const toNumber = req.body.To; 
-    const myTwilioNumber = process.env.TWILIO_PHONE_NUMBER || '+17374231506';
+// router.post('/voice', (req, res) => {
+//     const toNumber = req.body.To; 
+//     const myTwilioNumber = process.env.TWILIO_PHONE_NUMBER || '+17374231506';
 
-    const twiml = `<?xml version="1.0" encoding="UTF-8"?>
-    <Response>
-        <Dial callerId="${myTwilioNumber}" 
-              timeout="30" 
-              answerOnBridge="true" 
-              record="record-from-answer">
-              ${toNumber}
-        </Dial>
-    </Response>`;
+//     const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+//     <Response>
+//         <Dial callerId="${myTwilioNumber}" 
+//               timeout="30" 
+//               answerOnBridge="true" 
+//               record="record-from-answer">
+//               ${toNumber}
+//         </Dial>
+//     </Response>`;
     
-    res.type('text/xml');
-    res.send(twiml);
-});
+//     res.type('text/xml');
+//     res.send(twiml);
+// });
 
 // 🛑 15. Twilio Hangup Call API 
 router.post('/call/hangup-call', async (req, res) => { // 🎯 ካብ /hangup-call ናብ /call/hangup-call ቀይራ!
