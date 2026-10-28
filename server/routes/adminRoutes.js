@@ -172,6 +172,9 @@
 
 // module.exports = router;
 
+const authMiddleware = require('../middleware/AuthMiddleware.js');
+const adminMiddleware = require('../middleware/adminMiddleware.js');
+
 
 const express = require('express');
 const router = express.Router();
