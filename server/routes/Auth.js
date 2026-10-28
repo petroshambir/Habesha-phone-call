@@ -817,17 +817,21 @@ router.post('/register', async (req, res) => {
             });
         }
 
-        const brevoApiKey = process.env.BREVO_API_KEY;
+        // FIX: Accept BREVO_API_KEY or EMAIL_PASS as the Brevo API key.
+        const brevoApiKey =
+            process.env.BREVO_API_KEY || process.env.EMAIL_PASS;
+
+        // EMAIL_FROM must be a verified sender email in Brevo.
         const senderEmail = process.env.EMAIL_FROM;
 
         if (!brevoApiKey || !senderEmail) {
             console.error(
-                'Register Error: BREVO_API_KEY or EMAIL_FROM is missing.'
+                'Register Error: Missing BREVO_API_KEY (or EMAIL_PASS) or EMAIL_FROM.'
             );
 
             return res.status(500).json({
                 success: false,
-                msg: 'ናይ ኢመይል ስርዓት ገና ኣይተዳለወን።'
+                msg: 'ናይ ኢመይል ስርዓት ኣይተማልአን። ኣብ Render EMAIL_FROM ኣረጋግጽ።'
             });
         }
 
@@ -1337,5 +1341,3 @@ router.post('/call/hangup-call', async (req, res) => {
 });
 
 module.exports = router;
-
-//redeploy this server
