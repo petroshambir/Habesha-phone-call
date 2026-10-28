@@ -1343,125 +1343,135 @@
 // module.exports = router;
 
 
+// const express = require('express');
+// const router = express.Router();
+// const User = require('../Models/User.js');
+// const nodemailer = require('nodemailer');
+// const axios = require('axios');
+// const { parsePhoneNumberFromString } = require('libphonenumber-js');
+
+// // SMTP Config (Nodemailer)
+// const transporter = nodemailer.createTransport({
+//     host: 'smtp-relay.brevo.com',
+//     port: 465,
+//     secure: true,
+//     auth: {
+//         user: process.env.EMAIL_USER || 'petroshambirr@gmail.com',
+//         pass: process.env.EMAIL_PASS || 'ffymjvbttiokibbd'
+//     },
+//     tls: {
+//         rejectUnauthorized: false
+//     }
+// });
+
+// // Login API
+// router.post('/login', async (req, res) => {
+//     const { phone, deviceId } = req.body;
+//     try {
+//         const user = await User.findOne({ phoneNumber: phone });
+
+//         if (!user) {
+//             return res.status(404).json({ success: false, msg: "እዚ ቁጽሪ እዚ ኣይተመዝገበን!" });
+//         }
+
+//         if (!user.deviceId) {
+//             user.deviceId = deviceId;
+//             await user.save();
+//             return res.status(200).json({ success: true, user });
+//         }
+
+//         if (user.deviceId !== deviceId) {
+//             return res.status(403).json({
+//                 success: false,
+//                 msg: "እዚ ኣካውንት ኣብ ካልእ ስልኪ ተመዝጊቡ ስለዘሎ፡ ካብዚ ስልኪ ክትጥቀሙ ኣይትኽእሉን።"
+//             });
+//         }
+
+//         res.status(200).json({ success: true, user });
+//     } catch (err) {
+//         console.error("Login Error:", err);
+//         res.status(500).json({ success: false, msg: "Server Error" });
+//     }
+// });
+
+// // Register API
+// router.post('/register', async (req, res) => {
+//     const { email, phone, currency } = req.body;
+//     try {
+//         const userExists = await User.findOne({ $or: [{ email }, { phoneNumber: phone }] });
+//         const isExistingUser = !!userExists;
+//         const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
+
+//         console.log(`🔥 OTP for ${email}:`, otpCode);
+
+//         try {
+//             await axios.post('https://api.brevo.com/v3/smtp/email', {
+//                 sender: { name: "Habesha Tele", email: "petroshambirr@gmail.com" },
+//                 to: [{ email }],
+//                 subject: "Habesha Tele Code",
+//                 textContent: `ናትካ ናይ መረጋገጺ ኮድ ${otpCode} እዩ።`
+//             }, {
+//                 headers: {
+//                     accept: 'application/json',
+//                     'api-key': process.env.EMAIL_PASS || 'ffymjvbttiokibbd',
+//                     'content-type': 'application/json'
+//                 }
+//             });
+//             console.log("📨 Email sent successfully through Brevo API!");
+//         } catch (mailErr) {
+//             console.error("Email error...", mailErr.response ? mailErr.response.data : mailErr.message);
+//         }
+
+//         res.status(200).json({
+//             success: true,
+//             otp: otpCode,
+//             isExistingUser,
+//             userData: { email, phone, currency: currency || 'USD' }
+//         });
+//     } catch (err) {
+//         res.status(500).json({ success: false, msg: "Server Error" });
+//     }
+// });
+
+// // Verify OTP API
+// router.post('/verify-otp', async (req, res) => {
+//     const { email, phone, userOtp, actualOtp, isExistingUser, currency } = req.body;
+//     try {
+//         if (String(userOtp) === String(actualOtp)) {
+//             let user;
+//             if (isExistingUser) {
+//                 user = await User.findOne({ phoneNumber: phone });
+//             } else {
+//                 const phoneNumber = parsePhoneNumberFromString(phone);
+//                 const detectedCountry = phoneNumber && phoneNumber.country ? phoneNumber.country : "Unknown";
+
+//                 user = new User({
+//                     email,
+//                     phoneNumber: phone,
+//                     minutes: "00:00",
+//                     currency: currency || 'USD',
+//                     country: detectedCountry
+//                 });
+//                 await user.save();
+//             }
+//             res.status(200).json({ success: true, user });
+//         } else {
+//             res.status(400).json({ success: false, msg: "ዝኣተወ ኮድ ጌጋ እዩ።" });
+//         }
+//     } catch (err) {
+//         console.error("Verify OTP Error:", err);
+//         res.status(500).json({ success: false, msg: "Server Error" });
+//     }
+// });
+
+// module.exports = router;
+
 const express = require('express');
 const router = express.Router();
-const User = require('../Models/User.js');
-const nodemailer = require('nodemailer');
-const axios = require('axios');
-const { parsePhoneNumberFromString } = require('libphonenumber-js');
+const authController = require('../Controllers/authController');
 
-// SMTP Config (Nodemailer)
-const transporter = nodemailer.createTransport({
-    host: 'smtp-relay.brevo.com',
-    port: 465,
-    secure: true,
-    auth: {
-        user: process.env.EMAIL_USER || 'petroshambirr@gmail.com',
-        pass: process.env.EMAIL_PASS || 'ffymjvbttiokibbd'
-    },
-    tls: {
-        rejectUnauthorized: false
-    }
-});
-
-// Login API
-router.post('/login', async (req, res) => {
-    const { phone, deviceId } = req.body;
-    try {
-        const user = await User.findOne({ phoneNumber: phone });
-
-        if (!user) {
-            return res.status(404).json({ success: false, msg: "እዚ ቁጽሪ እዚ ኣይተመዝገበን!" });
-        }
-
-        if (!user.deviceId) {
-            user.deviceId = deviceId;
-            await user.save();
-            return res.status(200).json({ success: true, user });
-        }
-
-        if (user.deviceId !== deviceId) {
-            return res.status(403).json({
-                success: false,
-                msg: "እዚ ኣካውንት ኣብ ካልእ ስልኪ ተመዝጊቡ ስለዘሎ፡ ካብዚ ስልኪ ክትጥቀሙ ኣይትኽእሉን።"
-            });
-        }
-
-        res.status(200).json({ success: true, user });
-    } catch (err) {
-        console.error("Login Error:", err);
-        res.status(500).json({ success: false, msg: "Server Error" });
-    }
-});
-
-// Register API
-router.post('/register', async (req, res) => {
-    const { email, phone, currency } = req.body;
-    try {
-        const userExists = await User.findOne({ $or: [{ email }, { phoneNumber: phone }] });
-        const isExistingUser = !!userExists;
-        const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
-
-        console.log(`🔥 OTP for ${email}:`, otpCode);
-
-        try {
-            await axios.post('https://api.brevo.com/v3/smtp/email', {
-                sender: { name: "Habesha Tele", email: "petroshambirr@gmail.com" },
-                to: [{ email }],
-                subject: "Habesha Tele Code",
-                textContent: `ናትካ ናይ መረጋገጺ ኮድ ${otpCode} እዩ።`
-            }, {
-                headers: {
-                    accept: 'application/json',
-                    'api-key': process.env.EMAIL_PASS || 'ffymjvbttiokibbd',
-                    'content-type': 'application/json'
-                }
-            });
-            console.log("📨 Email sent successfully through Brevo API!");
-        } catch (mailErr) {
-            console.error("Email error...", mailErr.response ? mailErr.response.data : mailErr.message);
-        }
-
-        res.status(200).json({
-            success: true,
-            otp: otpCode,
-            isExistingUser,
-            userData: { email, phone, currency: currency || 'USD' }
-        });
-    } catch (err) {
-        res.status(500).json({ success: false, msg: "Server Error" });
-    }
-});
-
-// Verify OTP API
-router.post('/verify-otp', async (req, res) => {
-    const { email, phone, userOtp, actualOtp, isExistingUser, currency } = req.body;
-    try {
-        if (String(userOtp) === String(actualOtp)) {
-            let user;
-            if (isExistingUser) {
-                user = await User.findOne({ phoneNumber: phone });
-            } else {
-                const phoneNumber = parsePhoneNumberFromString(phone);
-                const detectedCountry = phoneNumber && phoneNumber.country ? phoneNumber.country : "Unknown";
-
-                user = new User({
-                    email,
-                    phoneNumber: phone,
-                    minutes: "00:00",
-                    currency: currency || 'USD',
-                    country: detectedCountry
-                });
-                await user.save();
-            }
-            res.status(200).json({ success: true, user });
-        } else {
-            res.status(400).json({ success: false, msg: "ዝኣተወ ኮድ ጌጋ እዩ።" });
-        }
-    } catch (err) {
-        console.error("Verify OTP Error:", err);
-        res.status(500).json({ success: false, msg: "Server Error" });
-    }
-});
+router.post('/login', authController.login);
+router.post('/register', authController.register);
+router.post('/verify-otp', authController.verifyOtp);
 
 module.exports = router;
