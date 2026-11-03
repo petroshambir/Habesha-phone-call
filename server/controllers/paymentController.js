@@ -3624,38 +3624,79 @@ const getProviderErrorMessage = (err) => {
 // CURRENCY RATE
 // --------------------------------------------------
 
+
 const getExchangeRate = async (currency) => {
     if (currency === 'USD') return 1;
 
-    const settings = await Settings.findOne({ currency });
+    const supportedCurrencies = ['ETB', 'UGX', 'KES'];
 
-    if (
-        settings?.useManualRate === true &&
-        Number.isFinite(Number(settings.manualRate)) &&
-        Number(settings.manualRate) > 0
-    ) {
-        return Number(settings.manualRate);
+    if (!supportedCurrencies.includes(currency)) {
+        throw new Error(`Unsupported currency: ${currency}`);
     }
 
     const response = await axios.get(
         'https://open.er-api.com/v6/latest/USD',
-        { timeout: TIMEOUT }
+        {
+            timeout: TIMEOUT,
+            headers: {
+                Accept: 'application/json'
+            }
+        }
     );
 
-    const rate = Number(response.data?.rates?.[currency]);
+    const data = response.data;
 
     if (
-        response.data?.result !== 'success' ||
-        !Number.isFinite(rate) ||
-        rate <= 0
+        response.status !== 200 ||
+        data?.result !== 'success' ||
+        data?.base_code !== 'USD'
     ) {
+        throw new Error('Exchange rate service is unavailable.');
+    }
+
+    const rate = Number(data.rates?.[currency]);
+
+    if (!Number.isFinite(rate) || rate <= 0) {
         throw new Error(
-            `A valid exchange rate for ${currency} is unavailable.`
+            `Exchange rate for ${currency} is unavailable.`
         );
     }
 
     return rate;
 };
+
+// const getExchangeRate = async (currency) => {
+//     if (currency === 'USD') return 1;
+
+//     const settings = await Settings.findOne({ currency });
+
+//     if (
+//         settings?.useManualRate === true &&
+//         Number.isFinite(Number(settings.manualRate)) &&
+//         Number(settings.manualRate) > 0
+//     ) {
+//         return Number(settings.manualRate);
+//     }
+
+//     const response = await axios.get(
+//         'https://open.er-api.com/v6/latest/USD',
+//         { timeout: TIMEOUT }
+//     );
+
+//     const rate = Number(response.data?.rates?.[currency]);
+
+//     if (
+//         response.data?.result !== 'success' ||
+//         !Number.isFinite(rate) ||
+//         rate <= 0
+//     ) {
+//         throw new Error(
+//             `A valid exchange rate for ${currency} is unavailable.`
+//         );
+//     }
+
+//     return rate;
+// };
 
 const calculateCharge = async (usdCents, currency) => {
     if (currency === 'USD') {
