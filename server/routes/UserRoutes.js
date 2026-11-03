@@ -197,16 +197,62 @@
 
 // module.exports = router;
 
+// const express = require('express');
+// const router = express.Router();
+// const userController = require('../controllers/userController.js');
+
+// router.get('/get-current-rate/:currency', userController.getCurrentRate);
+// router.get('/payment-methods/:country', userController.getPaymentMethods);
+// router.get('/current-user', userController.getCurrentUser);
+// router.get('/user-minutes', userController.getUserMinutes);
+// router.put('/add-minutes', userController.addMinutes);
+// router.put('/update-minutes', userController.updateMinutes);
+// router.post('/check-device', userController.checkDevice);
+
+// module.exports = router;
+
+
 const express = require('express');
 const router = express.Router();
-const userController = require('../controllers/userController.js');
 
-router.get('/get-current-rate/:currency', userController.getCurrentRate);
-router.get('/payment-methods/:country', userController.getPaymentMethods);
-router.get('/current-user', userController.getCurrentUser);
-router.get('/user-minutes', userController.getUserMinutes);
-router.put('/add-minutes', userController.addMinutes);
-router.put('/update-minutes', userController.updateMinutes);
-router.post('/check-device', userController.checkDevice);
+const userController = require('../controllers/userController.js');
+const authMiddleware = require('../middleware/AuthMiddleware.js');
+
+// Exchange rate
+router.get(
+    '/get-current-rate/:currency',
+    userController.getCurrentRate
+);
+
+// Available payment methods
+router.get(
+    '/payment-methods/:country',
+    userController.getPaymentMethods
+);
+
+// Authenticated user information
+router.get(
+    '/current-user',
+    authMiddleware,
+    userController.getCurrentUser
+);
+
+// Authenticated user's remaining minutes
+router.get(
+    '/user-minutes',
+    authMiddleware,
+    userController.getUserMinutes
+);
+
+// Update remaining minutes for the authenticated user
+router.put(
+    '/update-minutes',
+    authMiddleware,
+    userController.updateMinutes
+);
+
+// IMPORTANT:
+// Do not add a public /add-minutes route.
+// Minutes must only be credited after payment verification.
 
 module.exports = router;
