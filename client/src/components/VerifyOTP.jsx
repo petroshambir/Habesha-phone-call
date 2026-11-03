@@ -281,6 +281,7 @@ function VerifyOTP() {
       );
 
       if (res.data.success) {
+          localStorage.setItem("token", res.data.token);
         navigate('/home', {
           replace: true,
           state: {

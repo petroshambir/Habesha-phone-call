@@ -237,13 +237,21 @@ function Login() {
         }
       );
 
-      if (response.data.success) {
-        localStorage.setItem("userPhone", fullPhoneNumber);
+      // if (response.data.success) {
+      //   localStorage.setItem("userPhone", fullPhoneNumber);
 
-        navigate('/home', {
-          state: { userPhone: fullPhoneNumber }
-        });
-      }
+      //   navigate('/home', {
+      //     state: { userPhone: fullPhoneNumber }
+      //   });
+      // }
+      if (response.data.success) {
+  localStorage.setItem("userPhone", fullPhoneNumber);
+  localStorage.setItem("token", response.data.token);
+
+  navigate('/home', {
+    state: { userPhone: fullPhoneNumber }
+  });
+}
     } catch (err) {
       if (err.response) {
         if (err.response.status === 404) {
