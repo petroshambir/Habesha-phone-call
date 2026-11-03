@@ -1199,7 +1199,7 @@ const axios = require('axios');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 
-const Payment = require('../Models/Payment.js');
+const Payment = require('../Models/PaymentMethod.js');
 const User = require('../Models/User.js');
 
 const PACKAGES = Object.freeze({
