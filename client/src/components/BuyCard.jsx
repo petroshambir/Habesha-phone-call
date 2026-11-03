@@ -1720,39 +1720,92 @@ const BuyCard = () => {
   // Backend calculates the real checkout amount.
   // --------------------------------------------------
 
-  const fetchDisplayRate = useCallback(async (currency) => {
-    if (!currency || currency === "USD") {
-      setLiveRates({ USD: 1 });
+const fetchDisplayRate = useCallback(async (currency) => {
+  if (!currency || currency === "USD") {
+    setLiveRates({ USD: 1 });
+    return;
+  }
+
+  try {
+    // 1. First check Admin Dashboard settings
+    const settingsResponse = await axios.get(
+      `${API}/auth/get-current-rate/${currency}`
+    );
+
+    const settings = settingsResponse.data?.settings;
+
+    // 2. If Admin enabled MANUAL mode, use Admin's rate
+    if (
+      settings?.useManualRate === true &&
+      Number(settings.manualRate) > 0
+    ) {
+      setLiveRates({
+        [currency]: Number(settings.manualRate)
+      });
       return;
     }
 
-    try {
-      const response = await axios.get(
-        `${API}/auth/get-current-rate/${currency}`
-      );
+    // 3. Otherwise get the latest available automatic rate
+    const rateResponse = await axios.get(
+      "https://open.er-api.com/v6/latest/USD"
+    );
 
-      const data = response.data || {};
+    const rateData = rateResponse.data;
 
-      const possibleRate =
-        data.rate ??
-        data.exchangeRate ??
-        data.manualRate ??
-        data.settings?.manualRate;
-
-      const rate = Number(possibleRate);
-
-      if (Number.isFinite(rate) && rate > 0) {
-        setLiveRates({
-          [currency]: rate
-        });
-      } else {
-        setLiveRates(null);
-      }
-    } catch (error) {
-      console.error("Exchange rate error:", error);
-      setLiveRates(null);
+    if (rateData?.result !== "success") {
+      throw new Error("Automatic exchange rate is unavailable.");
     }
-  }, []);
+
+    const rate = Number(rateData.rates?.[currency]);
+
+    if (!Number.isFinite(rate) || rate <= 0) {
+      throw new Error(`Exchange rate for ${currency} is unavailable.`);
+    }
+
+    setLiveRates({
+      [currency]: rate
+    });
+
+  } catch (error) {
+    console.error("Exchange rate error:", error);
+    setLiveRates(null);
+  }
+}, []);
+
+
+  // const fetchDisplayRate = useCallback(async (currency) => {
+  //   if (!currency || currency === "USD") {
+  //     setLiveRates({ USD: 1 });
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await axios.get(
+  //       `${API}/auth/get-current-rate/${currency}`
+  //     );
+
+  //     const data = response.data || {};
+
+  //     const possibleRate =
+  //       data.rate ??
+  //       data.exchangeRate ??
+  //       data.manualRate ??
+  //       data.settings?.manualRate;
+
+  //     const rate = Number(possibleRate);
+
+  //     if (Number.isFinite(rate) && rate > 0) {
+  //       setLiveRates({
+  //         [currency]: rate
+  //       });
+  //     } else {
+  //       setLiveRates(null);
+  //     }
+  //   } catch (error) {
+  //     console.error("Exchange rate error:", error);
+  //     setLiveRates(null);
+  //   }
+  // }, []);
 
   // --------------------------------------------------
   // VERIFY PAYMENT AFTER RETURN FROM PROVIDER
